@@ -3,7 +3,7 @@ import VetDashboard from "@/components/VetDashboard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Star, Clock, Phone, Video, Calendar, Shield, Award } from "lucide-react";
+import { Search, MapPin, Star, Clock, MessageCircle, Calendar, Shield, Award } from "lucide-react";
 import vetDoctor from "@/assets/vet-doctor.jpg";
 
 const FindVetsPage = () => {
@@ -176,12 +176,8 @@ const FindVetsPage = () => {
                       Book Appointment
                     </Button>
                     <Button variant="outline" className="w-full">
-                      <Video className="w-4 h-4 mr-2" />
-                      Video Call
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Phone className="w-4 h-4 mr-2" />
-                      Phone Call
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Send Message
                     </Button>
                   </div>
                 </div>

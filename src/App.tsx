@@ -9,6 +9,8 @@ import MarketplacePage from "./pages/MarketplacePage";
 import AIHealthCheckPage from "./pages/AIHealthCheckPage";
 import FindVetsPage from "./pages/FindVetsPage";
 import HealthTrackerPage from "./pages/HealthTrackerPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/ai-health-check" element={<AIHealthCheckPage />} />
           <Route path="/find-vets" element={<FindVetsPage />} />
           <Route path="/health-tracker" element={<HealthTrackerPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain } from "lucide-react";
+import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Navigation = () => {
@@ -11,6 +11,8 @@ const Navigation = () => {
     { name: "AI Health Check", icon: Brain, href: "/ai-health-check" },
     { name: "Find Vets", icon: Stethoscope, href: "/find-vets" },
     { name: "Health Tracker", icon: Heart, href: "/health-tracker" },
+    { name: "About", icon: Info, href: "/about" },
+    { name: "Contact", icon: Mail, href: "/contact" },
   ];
 
   return (
