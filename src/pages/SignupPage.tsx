@@ -10,6 +10,7 @@ import Navigation from "@/components/Navigation";
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  phone: z.string().regex(/^(\+92|0)?[0-9]{10}$/, { message: "Invalid phone number format" }),
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
@@ -25,6 +26,7 @@ const SignupPage = () => {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
+      phone: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -58,6 +60,19 @@ const SignupPage = () => {
                       <FormLabel>Full Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Enter your name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="03001234567" type="tel" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
