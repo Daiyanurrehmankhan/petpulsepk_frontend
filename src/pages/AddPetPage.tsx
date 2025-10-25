@@ -4,22 +4,28 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Upload } from "lucide-react";
 
 const addPetSchema = z.object({
   name: z.string().min(2, { message: "Pet name must be at least 2 characters" }),
+  species: z.string().min(1, { message: "Species is required" }),
   breed: z.string().min(2, { message: "Breed must be at least 2 characters" }),
-  age: z.string().min(1, { message: "Age is required" }),
+  ageYears: z.string().min(1, { message: "Age (years) is required" }),
+  ageMonths: z.string().min(1, { message: "Age (months) is required" }),
+  gender: z.string().min(1, { message: "Gender is required" }),
+  healthStatus: z.string().min(1, { message: "Health status is required" }),
   price: z.string().min(1, { message: "Price is required" }),
   location: z.string().min(2, { message: "Location is required" }),
   description: z.string().min(10, { message: "Description must be at least 10 characters" }),
   features: z.string().min(5, { message: "Features are required (comma-separated)" }),
+  image: z.any().refine((files) => files?.length > 0, "Image is required"),
 });
 
 type AddPetFormValues = z.infer<typeof addPetSchema>;
@@ -28,13 +34,18 @@ const AddPetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<AddPetFormValues>({
     resolver: zodResolver(addPetSchema),
     defaultValues: {
       name: "",
+      species: "",
       breed: "",
-      age: "",
+      ageYears: "",
+      ageMonths: "",
+      gender: "",
+      healthStatus: "",
       price: "",
       location: "",
       description: "",
@@ -43,8 +54,6 @@ const AddPetPage = () => {
   });
 
   useEffect(() => {
-    // Check if user is logged in (you'll need to implement your actual auth check)
-    // For now, checking localStorage as a placeholder
     const checkAuth = () => {
       const user = localStorage.getItem("user");
       if (!user) {
@@ -64,13 +73,28 @@ const AddPetPage = () => {
   }, [navigate, toast]);
 
   const onSubmit = (data: AddPetFormValues) => {
-    console.log("Pet data:", data);
+    const formData = {
+      ...data,
+      age: `${data.ageYears} years ${data.ageMonths} months`,
+      image: imagePreview,
+    };
+    console.log("Pet data:", formData);
     toast({
       title: "Pet Added Successfully!",
       description: "Your pet listing has been created.",
     });
-    // Here you would typically send the data to your backend
     setTimeout(() => navigate("/marketplace"), 1500);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (isLoggedIn === null) {
@@ -119,13 +143,24 @@ const AddPetPage = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="breed"
+                    name="species"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Breed</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Persian Cat" {...field} />
-                        </FormControl>
+                        <FormLabel>Species</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select species" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="cat">Cat</SelectItem>
+                            <SelectItem value="dog">Dog</SelectItem>
+                            <SelectItem value="bird">Bird</SelectItem>
+                            <SelectItem value="rabbit">Rabbit</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -133,13 +168,113 @@ const AddPetPage = () => {
 
                   <FormField
                     control={form.control}
-                    name="age"
+                    name="breed"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Age</FormLabel>
+                        <FormLabel>Breed</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 8 months" {...field} />
+                          <Input placeholder="e.g., Persian" {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="ageYears"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Age (Years)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select years" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[...Array(16)].map((_, i) => (
+                              <SelectItem key={i} value={i.toString()}>
+                                {i} {i === 1 ? 'year' : 'years'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="ageMonths"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Age (Months)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select months" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[...Array(12)].map((_, i) => (
+                              <SelectItem key={i} value={i.toString()}>
+                                {i} {i === 1 ? 'month' : 'months'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="gender"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gender</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="male">Male</SelectItem>
+                            <SelectItem value="female">Female</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="healthStatus"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Health Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select health status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="excellent">Excellent</SelectItem>
+                            <SelectItem value="good">Good</SelectItem>
+                            <SelectItem value="fair">Fair</SelectItem>
+                            <SelectItem value="needs-attention">Needs Attention</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -202,6 +337,43 @@ const AddPetPage = () => {
                       <FormLabel>Features (comma-separated)</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Vaccinated, Health Certificate, Microchipped" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="image"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel>Pet Image</FormLabel>
+                      <FormControl>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-4">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                                handleImageChange(e);
+                              }}
+                              {...field}
+                              className="cursor-pointer"
+                            />
+                            <Upload className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          {imagePreview && (
+                            <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
+                              <img
+                                src={imagePreview}
+                                alt="Pet preview"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
