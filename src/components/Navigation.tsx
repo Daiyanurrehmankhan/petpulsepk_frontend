@@ -45,8 +45,12 @@ const Navigation = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" size="sm">Sign In</Button>
-            <Button variant="hero" size="sm">Get Started</Button>
+            <Link to="/login">
+              <Button variant="ghost" size="sm">Sign In</Button>
+            </Link>
+            <Link to="/signup">
+              <Button variant="hero" size="sm">Get Started</Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -77,8 +81,12 @@ const Navigation = () => {
               </Link>
             ))}
             <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-              <Button variant="ghost" className="justify-start">Sign In</Button>
-              <Button variant="hero" className="justify-start">Get Started</Button>
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" className="justify-start w-full">Sign In</Button>
+              </Link>
+              <Link to="/signup" onClick={() => setIsOpen(false)}>
+                <Button variant="hero" className="justify-start w-full">Get Started</Button>
+              </Link>
             </div>
           </div>
         )}
