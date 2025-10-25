@@ -156,9 +156,6 @@ const AddPetPage = () => {
                           <SelectContent>
                             <SelectItem value="cat">Cat</SelectItem>
                             <SelectItem value="dog">Dog</SelectItem>
-                            <SelectItem value="bird">Bird</SelectItem>
-                            <SelectItem value="rabbit">Rabbit</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
