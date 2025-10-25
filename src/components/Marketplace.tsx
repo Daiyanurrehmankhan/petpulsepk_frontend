@@ -2,10 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, Star, Clock, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import cat1 from "@/assets/cat-1.jpg";
 import cat2 from "@/assets/cat-2.jpg";
 
 const Marketplace = () => {
+  const navigate = useNavigate();
+  
   const pets = [
     {
       id: 1,
@@ -183,7 +186,7 @@ const Marketplace = () => {
               Join our verified seller community and reach thousands of loving families.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="warm" size="lg">
+              <Button variant="warm" size="lg" onClick={() => navigate("/add-pet")}>
                 Become a Seller
               </Button>
               <Button variant="outline" size="lg">
