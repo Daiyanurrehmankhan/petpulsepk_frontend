@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import axiosClient from "@/lib/api/axios-client";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -16,6 +19,9 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -24,9 +30,36 @@ const LoginPage = () => {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    console.log("Login data:", data);
-    // Backend integration will be handled separately
+  const onSubmit = async (data: LoginFormValues) => {
+    try {
+      const response = await axiosClient.post("/auth/login", data);
+      const { data: responseData } = response;
+
+      if (responseData.success) {
+        const { user, token } = responseData.data;
+
+        // Use auth context to persist login
+        login(token, user);
+
+        toast({
+          title: "Login Successful",
+          description: responseData.message || "Welcome back to PetPulse.pk!",
+          variant: "default",
+        });
+
+        // Redirect to home page
+        navigate('/');
+      } else {
+        throw new Error(responseData.message || "Login failed");
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "An error occurred during login";
+      toast({
+        title: "Login Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   return (

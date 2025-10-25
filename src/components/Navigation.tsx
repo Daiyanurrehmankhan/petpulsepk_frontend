@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail } from "lucide-react";
+import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail, LogOut, Plus, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navigationItems = [
     { name: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
@@ -45,12 +55,51 @@ const Navigation = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="hero" size="sm">Get Started</Button>
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button variant="hero" size="sm">Sign Up</Button>
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/add-pet">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Pet
+                  </Button>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {user?.full_name}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{user?.full_name}</span>
+                        <span className="text-xs text-muted-foreground capitalize">{user?.role}</span>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="text-destructive">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+            {!isAuthenticated && (
+              <Link to="/signup">
+                <Button variant="hero" size="sm">Get Started</Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}

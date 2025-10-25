@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import axiosClient from '@/lib/api/axios-client';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,6 +35,7 @@ type AddPetFormValues = z.infer<typeof addPetSchema>;
 const AddPetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -54,36 +57,94 @@ const AddPetPage = () => {
   });
 
   useEffect(() => {
-    const checkAuth = () => {
-      const user = localStorage.getItem("user");
-      if (!user) {
-        setIsLoggedIn(false);
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to add a pet listing",
-          variant: "destructive",
-        });
-        setTimeout(() => navigate("/login"), 2000);
-      } else {
-        setIsLoggedIn(true);
+    // rely on AuthContext for auth state
+    if (isAuthenticated) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to add a pet listing",
+        variant: "destructive",
+      });
+      setTimeout(() => navigate("/login"), 1200);
+    }
+  }, [isAuthenticated, navigate, toast]);
+
+  const onSubmit = async (data: AddPetFormValues) => {
+    try {
+      const fd = new FormData();
+      fd.append('name', data.name);
+      fd.append('breed', data.breed);
+      // send age in years as integer (backend expects integer)
+      fd.append('age', String(parseInt(data.ageYears || '0')));
+      fd.append('gender', data.gender);
+      // map description to medical_history column
+      fd.append('medical_history', data.description || '');
+
+      // append image file if present
+      const fileList = (data as any).image as FileList | undefined;
+      if (fileList && fileList.length > 0) {
+        fd.append('image', fileList[0]);
       }
-    };
 
-    checkAuth();
-  }, [navigate, toast]);
+      // send to backend - create pet
+      const res = await axiosClient.post('/pets', fd, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-  const onSubmit = (data: AddPetFormValues) => {
-    const formData = {
-      ...data,
-      age: `${data.ageYears} years ${data.ageMonths} months`,
-      image: imagePreview,
-    };
-    console.log("Pet data:", formData);
-    toast({
-      title: "Pet Added Successfully!",
-      description: "Your pet listing has been created.",
-    });
-    setTimeout(() => navigate("/marketplace"), 1500);
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || 'Failed to add pet');
+      }
+
+      // Pet created successfully
+      const pet = res.data.data?.pet;
+
+      // Create a marketplace listing for the newly created pet so it appears on the marketplace
+      const numericPrice = parseFloat((data.price || '').toString().replace(/[^0-9.]/g, '')) || 0;
+      const title = `${pet.name}${pet.breed ? ` - ${pet.breed}` : ''}`;
+      const listingPayload = {
+        pet_id: pet.id,
+        price: numericPrice,
+        title,
+        description: data.description || pet.description || '',
+      };
+
+      try {
+        const listingRes = await axiosClient.post('/marketplace/listings', listingPayload);
+        if (!listingRes.data?.success) {
+          // Listing creation failed, but pet exists. Notify user.
+          toast({
+            title: 'Pet created',
+            description: 'Pet added but failed to publish listing. You can publish it from your dashboard.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to create marketplace listing', err);
+        toast({
+          title: 'Pet created',
+          description: 'Pet added but failed to publish listing. You can publish it from your dashboard.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Pet Added Successfully!',
+        description: res.data.message || 'Your pet listing has been created.',
+      });
+      setTimeout(() => navigate('/marketplace'), 1200);
+    } catch (err: any) {
+      toast({
+        title: 'Failed to add pet',
+        description: err.response?.data?.message || err.message || 'An error occurred',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

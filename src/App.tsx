@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { PrivateRoute, PublicOnlyRoute } from "@/components/PrivateRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MarketplacePage from "./pages/MarketplacePage";
@@ -19,26 +21,63 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/marketplace" element={<MarketplacePage />} />
-          <Route path="/ai-health-check" element={<AIHealthCheckPage />} />
-          <Route path="/find-vets" element={<FindVetsPage />} />
-          <Route path="/health-tracker" element={<HealthTrackerPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/add-pet" element={<AddPetPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route
+              path="/ai-health-check"
+              element={
+                <PrivateRoute>
+                  <AIHealthCheckPage />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/find-vets" element={<FindVetsPage />} />
+            <Route
+              path="/health-tracker"
+              element={
+                <PrivateRoute>
+                  <HealthTrackerPage />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <LoginPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <PublicOnlyRoute>
+                  <SignupPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/add-pet"
+              element={
+                <PrivateRoute>
+                  <AddPetPage />
+                </PrivateRoute>
+              }
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

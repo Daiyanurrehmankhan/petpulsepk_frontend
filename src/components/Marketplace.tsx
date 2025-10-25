@@ -3,42 +3,40 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, Star, Clock, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react'
+import axiosClient from '@/lib/api/axios-client'
 import cat1 from "@/assets/cat-1.jpg";
 import cat2 from "@/assets/cat-2.jpg";
 
 const Marketplace = () => {
   const navigate = useNavigate();
   
-  const pets = [
-    {
-      id: 1,
-      name: "Luna",
-      breed: "Orange Tabby",
-      age: "8 months",
-      price: "$450",
-      location: "New York, NY",
-      rating: 4.9,
-      verified: true,
-      image: cat1,
-      seller: "Sarah Johnson",
-      description: "Playful and affectionate kitten, fully vaccinated",
-      features: ["Vaccinated", "Health Certificate", "Microchipped"]
-    },
-    {
-      id: 2,
-      name: "Milo",
-      breed: "Siamese",
-      age: "1 year",
-      price: "$650",
-      location: "Los Angeles, CA",
-      rating: 5.0,
-      verified: true,
-      image: cat2,
-      seller: "David Chen",
-      description: "Beautiful Siamese with striking blue eyes",
-      features: ["Vaccinated", "Pedigree Papers", "Health Guarantee"]
+  const [listings, setListings] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    const fetchListings = async () => {
+      try {
+        const res = await axiosClient.get('/marketplace/listings')
+        if (!mounted) return
+        const { data } = res
+        if (data?.success && Array.isArray(data.data?.listings)) {
+          setListings(data.data.listings)
+        } else {
+          setListings([])
+        }
+      } catch (err) {
+        console.error('Failed to load listings', err)
+        setListings([])
+      } finally {
+        if (mounted) setLoading(false)
+      }
     }
-  ];
+
+    fetchListings()
+    return () => { mounted = false }
+  }, [])
 
   return (
     <section className="py-20 bg-muted/30" id="marketplace">
@@ -72,13 +70,17 @@ const Marketplace = () => {
 
         {/* Pet Listings */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {pets.map((pet) => (
+          {loading ? (
+            <p className="text-center w-full">Loading listings...</p>
+          ) : listings.length === 0 ? (
+            <p className="text-center w-full">No listings yet.</p>
+          ) : listings.map((pet) => (
             <Card key={pet.id} className="group overflow-hidden hover:shadow-medium transition-all duration-300 border-border/50 bg-card">
               {/* Image */}
               <div className="relative aspect-square overflow-hidden">
                 <img 
-                  src={pet.image} 
-                  alt={pet.name}
+                  src={pet.image_url ? (import.meta.env.VITE_API_URL?.replace(/\/api\/v1\/?$/,'') || '') + pet.image_url : cat1} 
+                  alt={pet.pet_name || pet.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
