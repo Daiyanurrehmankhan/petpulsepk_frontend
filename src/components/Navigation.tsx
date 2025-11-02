@@ -61,44 +61,44 @@ const Navigation = () => {
                   <Button variant="ghost" size="sm">Sign In</Button>
                 </Link>
                 <Link to="/signup">
-                  <Button variant="hero" size="sm">Sign Up</Button>
+                  <Button variant="hero" size="sm">Get Started</Button>
                 </Link>
               </>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/add-pet">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Pet
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Hello, {user?.full_name}
                   </Button>
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      {user?.full_name}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{user?.full_name}</span>
-                        <span className="text-xs text-muted-foreground capitalize">{user?.role}</span>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout} className="text-destructive">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-background">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user?.full_name}</span>
+                      <span className="text-xs text-muted-foreground">{user?.email}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link to="/pet-portal">
+                    <DropdownMenuItem>
+                      <Heart className="w-4 h-4 mr-2" />
+                      My Pet Portal
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-            {!isAuthenticated && (
-              <Link to="/signup">
-                <Button variant="hero" size="sm">Get Started</Button>
-              </Link>
+                  </Link>
+                  <Link to="/add-pet">
+                    <DropdownMenuItem>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Pet
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
 
@@ -130,12 +130,45 @@ const Navigation = () => {
               </Link>
             ))}
             <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="justify-start w-full">Sign In</Button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button variant="hero" className="justify-start w-full">Get Started</Button>
-              </Link>
+              {!isAuthenticated ? (
+                <>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="justify-start w-full">Sign In</Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    <Button variant="hero" className="justify-start w-full">Get Started</Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div className="px-3 py-2 text-sm font-medium">
+                    Hello, {user?.full_name}
+                  </div>
+                  <Link to="/pet-portal" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="justify-start w-full gap-2">
+                      <Heart className="w-4 h-4" />
+                      My Pet Portal
+                    </Button>
+                  </Link>
+                  <Link to="/add-pet" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="justify-start w-full gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Pet
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start w-full gap-2 text-destructive hover:text-destructive"
+                    onClick={() => {
+                      logout();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

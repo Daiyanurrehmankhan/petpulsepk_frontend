@@ -16,6 +16,7 @@ import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import AddPetPage from "./pages/AddPetPage";
+import PetPortalPage from "./pages/PetPortalPage";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <AddPetPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pet-portal"
+              element={
+                <PrivateRoute>
+                  <PetPortalPage />
                 </PrivateRoute>
               }
             />
