@@ -41,6 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(userData));
     axiosClient.defaults.headers.Authorization = `Bearer ${newToken}`;
+    
+    // Redirect to appropriate dashboard based on role
+    if (userData.role === 'vet') {
+      navigate('/vet-dashboard');
+    } else {
+      navigate('/pet-portal');
+    }
   };
 
   const logout = () => {

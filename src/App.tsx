@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PrivateRoute, PublicOnlyRoute } from "@/components/PrivateRoute";
+import { RoleDashboardRedirect } from "@/components/RoleDashboardRedirect";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MarketplacePage from "./pages/MarketplacePage";
@@ -17,6 +18,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import AddPetPage from "./pages/AddPetPage";
 import PetPortalPage from "./pages/PetPortalPage";
+import VetDashboardPage from "./pages/VetDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +80,22 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <PetPortalPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vet-dashboard"
+              element={
+                <PrivateRoute>
+                  <VetDashboardPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <RoleDashboardRedirect />
                 </PrivateRoute>
               }
             />

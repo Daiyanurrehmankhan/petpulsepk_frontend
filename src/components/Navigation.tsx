@@ -80,18 +80,29 @@ const Navigation = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <Link to="/pet-portal">
-                    <DropdownMenuItem>
-                      <Heart className="w-4 h-4 mr-2" />
-                      My Pet Portal
-                    </DropdownMenuItem>
-                  </Link>
-                  <Link to="/add-pet">
-                    <DropdownMenuItem>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Pet
-                    </DropdownMenuItem>
-                  </Link>
+                  {user?.role === 'vet' ? (
+                    <Link to="/vet-dashboard">
+                      <DropdownMenuItem>
+                        <Stethoscope className="w-4 h-4 mr-2" />
+                        Vet Dashboard
+                      </DropdownMenuItem>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to="/pet-portal">
+                        <DropdownMenuItem>
+                          <Heart className="w-4 h-4 mr-2" />
+                          My Pet Portal
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link to="/add-pet">
+                        <DropdownMenuItem>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Pet
+                        </DropdownMenuItem>
+                      </Link>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
@@ -144,18 +155,29 @@ const Navigation = () => {
                   <div className="px-3 py-2 text-sm font-medium">
                     Hello, {user?.full_name}
                   </div>
-                  <Link to="/pet-portal" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="justify-start w-full gap-2">
-                      <Heart className="w-4 h-4" />
-                      My Pet Portal
-                    </Button>
-                  </Link>
-                  <Link to="/add-pet" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="justify-start w-full gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Pet
-                    </Button>
-                  </Link>
+                  {user?.role === 'vet' ? (
+                    <Link to="/vet-dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="justify-start w-full gap-2">
+                        <Stethoscope className="w-4 h-4" />
+                        Vet Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to="/pet-portal" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="justify-start w-full gap-2">
+                          <Heart className="w-4 h-4" />
+                          My Pet Portal
+                        </Button>
+                      </Link>
+                      <Link to="/add-pet" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="justify-start w-full gap-2">
+                          <Plus className="w-4 h-4" />
+                          Add Pet
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                   <Button 
                     variant="ghost" 
                     className="justify-start w-full gap-2 text-destructive hover:text-destructive"
