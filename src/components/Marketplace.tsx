@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+<<<<<<< HEAD
 import { Heart, MapPin, Star, Clock, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react'
+=======
+import { Input } from "@/components/ui/input";
+import { Heart, MapPin, Star, Clock, Shield, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useMemo } from 'react'
+>>>>>>> 3c977e3 (Dawood work - marketplace search functionality)
 import axiosClient from '@/lib/api/axios-client'
 import cat1 from "@/assets/cat-1.jpg";
 import cat2 from "@/assets/cat-2.jpg";
@@ -13,6 +20,11 @@ const Marketplace = () => {
   
   const [listings, setListings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+<<<<<<< HEAD
+=======
+  const [activeFilter, setActiveFilter] = useState<string>("all")
+  const [searchQuery, setSearchQuery] = useState<string>("")
+>>>>>>> 3c977e3 (Dawood work - marketplace search functionality)
 
   useEffect(() => {
     let mounted = true
@@ -38,6 +50,56 @@ const Marketplace = () => {
     return () => { mounted = false }
   }, [])
 
+<<<<<<< HEAD
+=======
+  // Helper function to check if text matches search query
+  const matchesSearch = (text: string, query: string): boolean => {
+    if (!text || !query) return true
+    return text.toLowerCase().includes(query.toLowerCase())
+  }
+
+  // Helper function to extract numeric price from string (e.g., "$500" or "Rs. 500")
+  const extractPrice = (priceStr: string): number => {
+    if (!priceStr) return 0
+    const numericValue = priceStr.replace(/[^0-9]/g, '')
+    return parseInt(numericValue) || 0
+  }
+
+  // Filter listings based on active filter and search query
+  const filteredListings = useMemo(() => {
+    return listings.filter(pet => {
+      // Apply search query filter (search in name, breed, and description)
+      if (searchQuery) {
+        const matchesName = matchesSearch(pet.name || '', searchQuery)
+        const matchesBreed = matchesSearch(pet.breed || '', searchQuery)
+        const matchesDescription = matchesSearch(pet.description || '', searchQuery)
+        
+        if (!matchesName && !matchesBreed && !matchesDescription) {
+          return false
+        }
+      }
+
+      // Apply category filter
+      if (activeFilter === "all") {
+        return true
+      } else if (activeFilter === "cats") {
+        return matchesSearch(pet.name, "cat") || matchesSearch(pet.breed, "cat") || matchesSearch(pet.description, "cat")
+      } else if (activeFilter === "dogs") {
+        return matchesSearch(pet.name, "dog") || matchesSearch(pet.breed, "dog") || matchesSearch(pet.description, "dog")
+      } else if (activeFilter === "parrot") {
+        return matchesSearch(pet.name, "parrot") || matchesSearch(pet.breed, "parrot") || matchesSearch(pet.description, "parrot")
+      } else if (activeFilter === "rabbit") {
+        return matchesSearch(pet.name, "rabbit") || matchesSearch(pet.breed, "rabbit") || matchesSearch(pet.description, "rabbit")
+      } else if (activeFilter === "under500") {
+        const price = extractPrice(pet.price || '')
+        return price < 500
+      }
+
+      return true
+    })
+  }, [listings, activeFilter, searchQuery])
+
+>>>>>>> 3c977e3 (Dawood work - marketplace search functionality)
   return (
     <section className="py-20 bg-muted/30" id="marketplace">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,6 +121,7 @@ const Marketplace = () => {
           </p>
         </div>
 
+<<<<<<< HEAD
         {/* Filter Bar */}
         <div className="flex flex-wrap gap-4 justify-center mb-12">
           <Button variant="default" size="sm">All Categories</Button>
@@ -66,15 +129,81 @@ const Marketplace = () => {
           <Button variant="outline" size="sm">Dogs</Button>
           <Button variant="outline" size="sm">Under $500</Button>
           <Button variant="outline" size="sm">Verified Only</Button>
+=======
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search pets by name, breed, or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-6 text-base"
+            />
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="flex flex-wrap gap-4 justify-center mb-12">
+          <Button 
+            variant={activeFilter === "all" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter("all")}
+          >
+            All Categories
+          </Button>
+          <Button 
+            variant={activeFilter === "cats" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter("cats")}
+          >
+            Cats
+          </Button>
+          <Button 
+            variant={activeFilter === "dogs" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter("dogs")}
+          >
+            Dogs
+          </Button>
+          <Button 
+            variant={activeFilter === "parrot" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter("parrot")}
+          >
+            Parrot
+          </Button>
+          <Button 
+            variant={activeFilter === "rabbit" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter("rabbit")}
+          >
+            Rabbit
+          </Button>
+          <Button 
+            variant={activeFilter === "under500" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter("under500")}
+          >
+            Under $500
+          </Button>
+>>>>>>> 3c977e3 (Dawood work - marketplace search functionality)
         </div>
 
         {/* Pet Listings */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {loading ? (
             <p className="text-center w-full">Loading listings...</p>
+<<<<<<< HEAD
           ) : listings.length === 0 ? (
             <p className="text-center w-full">No listings yet.</p>
           ) : listings.map((pet) => (
+=======
+          ) : filteredListings.length === 0 ? (
+            <p className="text-center w-full">No listings found matching your filters.</p>
+          ) : filteredListings.map((pet) => (
+>>>>>>> 3c977e3 (Dawood work - marketplace search functionality)
             <Card key={pet.id} className="group overflow-hidden hover:shadow-medium transition-all duration-300 border-border/50 bg-card">
               {/* Image */}
               <div className="relative aspect-square overflow-hidden">
@@ -117,11 +246,25 @@ const Marketplace = () => {
 
                 {/* Features */}
                 <div className="flex flex-wrap gap-2 mb-4">
+<<<<<<< HEAD
                   {pet.features.map((feature, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {feature}
                     </Badge>
                   ))}
+=======
+                  {Array.isArray(pet.features) && pet.features.length > 0 ? (
+                    pet.features.map((feature, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {feature}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-muted-foreground">
+                      No features listed
+                    </Badge>
+                  )}
+>>>>>>> 3c977e3 (Dawood work - marketplace search functionality)
                 </div>
 
                 {/* Seller Info */}
