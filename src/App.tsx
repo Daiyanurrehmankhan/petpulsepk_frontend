@@ -19,6 +19,10 @@ import SignupPage from "./pages/SignupPage";
 import AddPetPage from "./pages/AddPetPage";
 import PetPortalPage from "./pages/PetPortalPage";
 import VetDashboardPage from "./pages/VetDashboardPage";
+import PetDetailsPage from "./pages/PetDetailsPage";
+import ContactSellerPage from "./pages/ContactSellerPage";
+import MyPetsPage from "./pages/MyPetsPage";
+import AddEditMyPetPage from "./pages/AddEditMyPetPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +36,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/pet/:id" element={<PetDetailsPage />} />
+            <Route path="/pet/:id/contact" element={<ContactSellerPage />} />
             <Route
               path="/ai-health-check"
               element={
@@ -80,6 +86,30 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <PetPortalPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-pets"
+              element={
+                <PrivateRoute>
+                  <MyPetsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-pets/add"
+              element={
+                <PrivateRoute>
+                  <AddEditMyPetPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-pets/edit/:id"
+              element={
+                <PrivateRoute>
+                  <AddEditMyPetPage />
                 </PrivateRoute>
               }
             />

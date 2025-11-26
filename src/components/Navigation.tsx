@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail, LogOut, Plus, User } from "lucide-react";
+import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail, LogOut, Plus, User, PawPrint } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -65,13 +65,20 @@ const Navigation = () => {
                 </Link>
               </>
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Hello, {user?.full_name}
+              <>
+                <Link to="/my-pets">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <PawPrint className="w-4 h-4" />
+                    My Pets
                   </Button>
-                </DropdownMenuTrigger>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Hello, {user?.full_name}
+                    </Button>
+                  </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-background">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
@@ -110,6 +117,7 @@ const Navigation = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             )}
           </div>
 
@@ -155,6 +163,12 @@ const Navigation = () => {
                   <div className="px-3 py-2 text-sm font-medium">
                     Hello, {user?.full_name}
                   </div>
+                  <Link to="/my-pets" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="justify-start w-full gap-2">
+                      <PawPrint className="w-4 h-4" />
+                      My Pets
+                    </Button>
+                  </Link>
                   {user?.role === 'vet' ? (
                     <Link to="/vet-dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="justify-start w-full gap-2">
