@@ -97,46 +97,41 @@ const Marketplace = () => {
     }
   }, [sellDialogOpen, isAuthenticated]);
 
-  // Update selected pet when pet ID changes
+  // Update selected pet when pet ID changes (robust string/number handling)
   useEffect(() => {
     if (!sellDialogOpen) {
       // Don't update if dialog is closed
       return;
     }
-    
-    console.log("useEffect triggered", { 
-      selectedPetId, 
-      userPetsLength: userPets.length,
-      userPets: userPets.map(p => ({ id: p.id, name: p.name }))
-    });
-    
-    if (selectedPetId && userPets.length > 0) {
-      const petIdNum = Number(selectedPetId);
-      console.log("Looking for pet with ID:", petIdNum, "Type:", typeof petIdNum);
-      const pet = userPets.find(p => {
-        const match = p.id === petIdNum || String(p.id) === String(petIdNum);
-        console.log("Comparing:", p.id, "(type:", typeof p.id, ") with", petIdNum, "(type:", typeof petIdNum, ") Result:", match);
-        return match;
-      });
-      console.log("Found pet:", pet);
-      if (pet) {
-        console.log("Setting selected pet:", pet);
-        setSelectedPet(pet);
-        // Only set price if it's not already set by user
-        if (!listingPrice || listingPrice === "") {
-          setListingPrice(pet.price ? String(pet.price) : "");
-        }
-      } else {
-        console.log("Pet not found for ID:", selectedPetId, "Available IDs:", userPets.map(p => ({ id: p.id, type: typeof p.id })));
-        setSelectedPet(null);
+
+    // If no selection or no pets loaded, clear selection
+    if (!selectedPetId || userPets.length === 0) {
+      setSelectedPet(null);
+      return;
+    }
+
+    const petIdStr = String(selectedPetId);
+
+    // Find by exact string match first (works for UUIDs and numeric strings)
+    let pet = userPets.find(p => String(p.id) === petIdStr);
+
+    // If not found, attempt numeric comparison when both sides look numeric
+    if (!pet) {
+      const selNum = Number(petIdStr);
+      if (!Number.isNaN(selNum)) {
+        pet = userPets.find(p => {
+          const pNum = Number(p.id);
+          return !Number.isNaN(pNum) && pNum === selNum;
+        });
+      }
+    }
+
+    if (pet) {
+      setSelectedPet(pet);
+      if (!listingPrice || listingPrice.trim() === "") {
+        setListingPrice(pet.price ? String(pet.price) : "");
       }
     } else {
-      if (!selectedPetId) {
-        console.log("No selectedPetId");
-      }
-      if (userPets.length === 0) {
-        console.log("No userPets available");
-      }
       setSelectedPet(null);
     }
   }, [selectedPetId, userPets, sellDialogOpen]);
