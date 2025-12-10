@@ -24,6 +24,7 @@ import VaccinationsPage from "./pages/VaccinationsPage";
 import ContactSellerPage from "./pages/ContactSellerPage";
 import MyPetsPage from "./pages/MyPetsPage";
 import AddEditMyPetPage from "./pages/AddEditMyPetPage";
+import MyPetGalleryPage from "./pages/MyPetGalleryPage";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <AddEditMyPetPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-pets/gallery/:petId"
+              element={
+                <PrivateRoute>
+                  <MyPetGalleryPage />
                 </PrivateRoute>
               }
             />

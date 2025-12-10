@@ -4,150 +4,67 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Star, Shield, ArrowLeft, CheckCircle, Phone, Mail, Calendar, Ruler } from "lucide-react";
+import { Heart, MapPin, Star, Shield, ArrowLeft, CheckCircle, Phone, Mail, Calendar, Ruler, Images } from "lucide-react";
+import axiosClient from '@/lib/api/axios-client'
 import cat1 from "@/assets/cat-1.jpg";
-import cat2 from "@/assets/cat-2.jpg";
-
-// Sample data - same as in Marketplace.tsx
-const sampleListings = [
-  {
-    id: '1',
-    name: 'Golden Retriever Puppy',
-    breed: 'Golden Retriever',
-    age: '2 months',
-    price: 'Rs. 45,000',
-    description: 'Adorable golden retriever puppy, fully vaccinated and healthy. Very playful and friendly. Comes with health certificate and vaccination records.',
-    image_url: cat1,
-    verified: true,
-    seller: 'Ahmed Khan',
-    rating: '4.8',
-    location: 'Karachi, Pakistan',
-    features: ['Vaccinated', 'Health Certificate', 'Playful', 'Friendly'],
-    contact: '+92 300 1234567',
-    email: 'ahmed.khan@example.com',
-    fullDescription: 'This beautiful Golden Retriever puppy is the perfect addition to any family. Born from champion bloodlines, this pup has been raised with love and care. The puppy has received all necessary vaccinations and comes with complete health documentation. Known for their friendly and gentle nature, Golden Retrievers make excellent family pets and are great with children. This particular puppy is very social, loves to play, and is already showing signs of being highly trainable.',
-    healthInfo: 'All vaccinations up to date, dewormed, health certificate provided',
-    additionalImages: [cat1, cat2]
-  },
-  {
-    id: '2',
-    name: 'Persian Cat',
-    breed: 'Persian',
-    age: '6 months',
-    price: 'Rs. 25,000',
-    description: 'Beautiful Persian cat with long silky fur. Very calm and gentle. Perfect for families. All vaccinations up to date.',
-    image_url: cat2,
-    verified: true,
-    seller: 'Fatima Ali',
-    rating: '4.9',
-    location: 'Lahore, Pakistan',
-    features: ['Vaccinated', 'Calm', 'Family Friendly', 'Pure Breed'],
-    contact: '+92 321 9876543',
-    email: 'fatima.ali@example.com',
-    fullDescription: 'This stunning Persian cat is a true beauty with its long, luxurious coat and expressive eyes. Persian cats are known for their calm and gentle demeanor, making them perfect indoor companions. This cat has been well-socialized and is comfortable around people. The cat is fully vaccinated and in excellent health.',
-    healthInfo: 'All vaccinations complete, spayed/neutered, health certificate included',
-    additionalImages: [cat2, cat1]
-  },
-  {
-    id: '3',
-    name: 'German Shepherd',
-    breed: 'German Shepherd',
-    age: '3 months',
-    price: 'Rs. 60,000',
-    description: 'Strong and intelligent German Shepherd puppy. Excellent for training. Very loyal and protective. Health certificate included.',
-    image_url: cat1,
-    verified: true,
-    seller: 'Hassan Malik',
-    rating: '4.7',
-    location: 'Islamabad, Pakistan',
-    features: ['Vaccinated', 'Intelligent', 'Loyal', 'Trainable'],
-    contact: '+92 333 4567890',
-    email: 'hassan.malik@example.com',
-    fullDescription: 'This German Shepherd puppy comes from a reputable breeder and shows excellent temperament. Known for their intelligence and loyalty, German Shepherds are one of the most trainable breeds. This puppy is already showing signs of being quick to learn and eager to please.',
-    healthInfo: 'All vaccinations up to date, health certificate provided',
-    additionalImages: [cat1, cat2]
-  },
-  {
-    id: '4',
-    name: 'Siamese Cat',
-    breed: 'Siamese',
-    age: '4 months',
-    price: 'Rs. 30,000',
-    description: 'Elegant Siamese cat with striking blue eyes. Very social and vocal. Perfect companion for cat lovers.',
-    image_url: cat2,
-    verified: true,
-    seller: 'Ayesha Rehman',
-    rating: '4.6',
-    location: 'Karachi, Pakistan',
-    features: ['Vaccinated', 'Social', 'Vocal', 'Elegant'],
-    contact: '+92 345 1234567',
-    email: 'ayesha.rehman@example.com',
-    fullDescription: 'This elegant Siamese cat is known for its striking appearance and vocal personality. Siamese cats are highly social and form strong bonds with their owners. This cat is very playful and loves attention.',
-    healthInfo: 'All vaccinations complete, health certificate included',
-    additionalImages: [cat2, cat1]
-  },
-  {
-    id: '5',
-    name: 'Labrador Puppy',
-    breed: 'Labrador',
-    age: '2.5 months',
-    price: 'Rs. 40,000',
-    description: 'Friendly Labrador puppy, great with kids. Very energetic and playful. All vaccinations complete.',
-    image_url: cat1,
-    verified: true,
-    seller: 'Bilal Ahmed',
-    rating: '4.8',
-    location: 'Lahore, Pakistan',
-    features: ['Vaccinated', 'Kid Friendly', 'Energetic', 'Playful'],
-    contact: '+92 300 7654321',
-    email: 'bilal.ahmed@example.com',
-    fullDescription: 'This friendly Labrador puppy is perfect for active families. Labradors are known for their friendly nature and love of play. This puppy is very energetic and loves to be around people.',
-    healthInfo: 'All vaccinations up to date, health certificate provided',
-    additionalImages: [cat1, cat2]
-  },
-  {
-    id: '6',
-    name: 'British Shorthair',
-    breed: 'British Shorthair',
-    age: '5 months',
-    price: 'Rs. 35,000',
-    description: 'Cute British Shorthair with round face and dense coat. Very calm and independent. Perfect indoor pet.',
-    image_url: cat2,
-    verified: true,
-    seller: 'Zainab Hassan',
-    rating: '4.9',
-    location: 'Rawalpindi, Pakistan',
-    features: ['Vaccinated', 'Calm', 'Independent', 'Indoor Pet'],
-    contact: '+92 321 2345678',
-    email: 'zainab.hassan@example.com',
-    fullDescription: 'This adorable British Shorthair has a distinctive round face and dense, plush coat. Known for their calm and easygoing nature, British Shorthairs make excellent indoor companions.',
-    healthInfo: 'All vaccinations complete, health certificate included',
-    additionalImages: [cat2, cat1]
-  }
-];
 
 const PetDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [pet, setPet] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<string | any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Find pet from sample data
-    const foundPet = sampleListings.find(p => p.id === id);
-    if (foundPet) {
-      setPet(foundPet);
-      setSelectedImage(foundPet.image_url);
-    } else {
-      // If not found, redirect to marketplace
-      navigate('/marketplace');
-    }
+    const fetchListing = async () => {
+      try {
+        console.log('Fetching listing with id:', id);
+        const res = await axiosClient.get(`/marketplace/listings/${id}`);
+        console.log('Listing response:', res.data);
+        if (res.data?.success && res.data?.data?.listing) {
+          const listing = res.data.data.listing;
+          console.log('Setting pet:', listing);
+          setPet(listing);
+          // Use first image from images array or image_url or fallback
+          const firstImage = Array.isArray(listing.images) && listing.images.length > 0 
+            ? listing.images[0] 
+            : listing.image_url || cat1;
+          setSelectedImage(firstImage);
+        } else {
+          console.log('Invalid response structure:', res.data);
+          navigate('/marketplace');
+        }
+      } catch (err: any) {
+        console.error('Failed to load listing:', err.response?.status, err.message);
+        // Navigate back after a delay to ensure error is logged
+        setTimeout(() => navigate('/marketplace'), 500);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListing();
   }, [id, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg text-muted-foreground mb-2">Loading pet details...</p>
+          <p className="text-sm text-muted-foreground">ID: {id}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!pet) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
+        <div className="text-center">
+          <p className="text-lg text-muted-foreground mb-4">Pet not found</p>
+          <p className="text-sm text-muted-foreground mb-4">ID: {id}</p>
+          <Button onClick={() => navigate('/marketplace')}>Back to Marketplace</Button>
+        </div>
       </div>
     );
   }
@@ -189,9 +106,9 @@ const PetDetailsPage = () => {
             </Card>
 
             {/* Thumbnail Images */}
-            {pet.additionalImages && pet.additionalImages.length > 0 && (
+            {pet.images && pet.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {[pet.image_url, ...pet.additionalImages].map((img, idx) => (
+                {pet.images.map((img: string, idx: number) => (
                   <Card
                     key={idx}
                     className={`cursor-pointer overflow-hidden transition-all ${
@@ -202,7 +119,7 @@ const PetDetailsPage = () => {
                     <div className="aspect-square">
                       <img
                         src={typeof img === 'string' ? img : img || cat1}
-                        alt={`${pet.name} ${idx + 1}`}
+                        alt={`${pet.pet_name || pet.name} ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -235,19 +152,21 @@ const PetDetailsPage = () => {
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <MapPin className="w-4 h-4" />
-                  <span>{pet.location}</span>
+                  <span>{pet.location || pet.city || '-'}</span>
                 </div>
               </div>
 
               {/* Features */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                {pet.features.map((feature: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="text-sm py-1 px-3">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    {feature}
-                  </Badge>
-                ))}
-              </div>
+              {Array.isArray(pet.features) && pet.features.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {pet.features.map((feature: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-sm py-1 px-3">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      {feature}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -277,27 +196,33 @@ const PetDetailsPage = () => {
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
                     <span className="text-white text-xl font-medium">
-                      {pet.seller.split(' ').map((n: string) => n[0]).join('')}
+                      {(pet.seller || pet.seller_name || 'S').split(' ').map((n: string) => n[0]).join('')}
                     </span>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold">{pet.seller}</p>
+                    <p className="text-lg font-semibold">{pet.seller || pet.seller_name || 'Seller'}</p>
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-sm text-muted-foreground">{pet.rating} rating</span>
+                      <span className="text-sm text-muted-foreground">{pet.rating || '-'} rating</span>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2 pt-4 border-t">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span>{pet.contact}</span>
+                {(pet.seller_phone || pet.contact || pet.seller_email || pet.email) && (
+                  <div className="space-y-2 pt-4 border-t">
+                    {(pet.seller_phone || pet.contact) && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <span>{pet.seller_phone || pet.contact}</span>
+                      </div>
+                    )}
+                    {(pet.seller_email || pet.email) && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <span>{pet.seller_email || pet.email}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span>{pet.email}</span>
-                  </div>
-                </div>
+                )}
               </div>
             </Card>
           </div>

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import axiosClient from "@/lib/api/axios-client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Edit, Trash2, PawPrint, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, PawPrint, Loader2, Image as ImageIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -213,23 +213,33 @@ const MyPetsPage = () => {
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => handleEditClick(pet)}
+                      variant="default"
+                      className="w-full"
+                      onClick={() => navigate(`/my-pets/gallery/${pet.id}`)}
                     >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Picture Gallery
                     </Button>
-                    <Button
-                      variant="destructive"
-                      className="flex-1"
-                      onClick={() => handleDeleteClick(pet)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => handleEditClick(pet)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => handleDeleteClick(pet)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Card>

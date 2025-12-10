@@ -4,7 +4,7 @@ import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, PawPrint, Loader2, Syringe } from "lucide-react";
+import { Plus, PawPrint, Loader2, Syringe, Image as ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import axiosClient from "@/lib/api/axios-client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -160,6 +160,14 @@ const PetPortalPage = () => {
                         Vaccinations
                       </Button>
                     </Link>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 gap-2"
+                      onClick={() => navigate(`/my-pets/gallery/${pet.id}`)}
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      Gallery
+                    </Button>
                     <Button variant="outline" className="flex-1">Edit</Button>
                     <Button variant="outline" className="flex-1">Remove</Button>
                   </div>
