@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-// Use native <select> for reliable selection events
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,6 @@ import axiosClient from '@/lib/api/axios-client'
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import cat1 from "@/assets/cat-1.jpg";
-import cat2 from "@/assets/cat-2.jpg";
 
 interface Pet {
   id: number;
@@ -30,7 +29,12 @@ interface Pet {
   price?: number;
   description?: string;
   medical_history?: string;
-  image_urls?: string[];
+  image_urls?: string[]; // older API field for user pets
+  image_url?: string; // single image URL from pet record
+  images?: string[]; // new listing images array (marketplace)
+  pet_name?: string; // when listing joins pet table this may be returned as pet_name
+  seller_name?: string; // backend returns seller_name
+  city?: string; // seller city
 }
 
 const Marketplace = () => {
@@ -53,110 +57,12 @@ const Marketplace = () => {
   const [creatingListing, setCreatingListing] = useState(false);
   const [loadingPets, setLoadingPets] = useState(false);
 
-  // Hardcoded sample data for demo purposes
-  const sampleListings = [
-    {
-      id: '1',
-      name: 'Golden Retriever Puppy',
-      breed: 'Golden Retriever',
-      age: '2 months',
-      price: 'Rs. 45,000',
-      description: 'Adorable golden retriever puppy, fully vaccinated and healthy. Very playful and friendly. Comes with health certificate and vaccination records.',
-      image_url: cat1,
-      verified: true,
-      seller: 'Ahmed Khan',
-      rating: '4.8',
-      location: 'Karachi, Pakistan',
-      features: ['Vaccinated', 'Health Certificate', 'Playful', 'Friendly'],
-      contact: '+92 300 1234567',
-      email: 'ahmed.khan@example.com'
-    },
-    {
-      id: '2',
-      name: 'Persian Cat',
-      breed: 'Persian',
-      age: '6 months',
-      price: 'Rs. 25,000',
-      description: 'Beautiful Persian cat with long silky fur. Very calm and gentle. Perfect for families. All vaccinations up to date.',
-      image_url: cat2,
-      verified: true,
-      seller: 'Fatima Ali',
-      rating: '4.9',
-      location: 'Lahore, Pakistan',
-      features: ['Vaccinated', 'Calm', 'Family Friendly', 'Pure Breed'],
-      contact: '+92 321 9876543',
-      email: 'fatima.ali@example.com'
-    },
-    {
-      id: '3',
-      name: 'German Shepherd',
-      breed: 'German Shepherd',
-      age: '3 months',
-      price: 'Rs. 60,000',
-      description: 'Strong and intelligent German Shepherd puppy. Excellent for training. Very loyal and protective. Health certificate included.',
-      image_url: cat1,
-      verified: true,
-      seller: 'Hassan Malik',
-      rating: '4.7',
-      location: 'Islamabad, Pakistan',
-      features: ['Vaccinated', 'Intelligent', 'Loyal', 'Trainable'],
-      contact: '+92 333 4567890',
-      email: 'hassan.malik@example.com'
-    },
-    {
-      id: '4',
-      name: 'Siamese Cat',
-      breed: 'Siamese',
-      age: '4 months',
-      price: 'Rs. 30,000',
-      description: 'Elegant Siamese cat with striking blue eyes. Very social and vocal. Perfect companion for cat lovers.',
-      image_url: cat2,
-      verified: true,
-      seller: 'Ayesha Rehman',
-      rating: '4.6',
-      location: 'Karachi, Pakistan',
-      features: ['Vaccinated', 'Social', 'Vocal', 'Elegant'],
-      contact: '+92 345 1234567',
-      email: 'ayesha.rehman@example.com'
-    },
-    {
-      id: '5',
-      name: 'Labrador Puppy',
-      breed: 'Labrador',
-      age: '2.5 months',
-      price: 'Rs. 40,000',
-      description: 'Friendly Labrador puppy, great with kids. Very energetic and playful. All vaccinations complete.',
-      image_url: cat1,
-      verified: true,
-      seller: 'Bilal Ahmed',
-      rating: '4.8',
-      location: 'Lahore, Pakistan',
-      features: ['Vaccinated', 'Kid Friendly', 'Energetic', 'Playful'],
-      contact: '+92 300 7654321',
-      email: 'bilal.ahmed@example.com'
-    },
-    {
-      id: '6',
-      name: 'British Shorthair',
-      breed: 'British Shorthair',
-      age: '5 months',
-      price: 'Rs. 35,000',
-      description: 'Cute British Shorthair with round face and dense coat. Very calm and independent. Perfect indoor pet.',
-      image_url: cat2,
-      verified: true,
-      seller: 'Zainab Hassan',
-      rating: '4.9',
-      location: 'Rawalpindi, Pakistan',
-      features: ['Vaccinated', 'Calm', 'Independent', 'Indoor Pet'],
-      contact: '+92 321 2345678',
-      email: 'zainab.hassan@example.com'
-    }
-  ]
+  // listings are fetched from the backend; no hardcoded demo data
 
   useEffect(() => {
-    // Temporarily using hardcoded data instead of API call
-    setListings(sampleListings)
-    setLoading(false)
+    // // Temporarily using hardcoded data instead of API call
+    // setListings(sampleListings)
+    // setLoading(false)
     
     // Uncomment below when backend is ready
     
@@ -186,57 +92,66 @@ const Marketplace = () => {
 
   // Fetch user's pets when sell dialog opens
   useEffect(() => {
-    console.log("Sell dialog opened, fetching pets...", { sellDialogOpen, isAuthenticated });
     if (sellDialogOpen && isAuthenticated) {
       fetchUserPets();
     }
   }, [sellDialogOpen, isAuthenticated]);
 
-  // Log whenever pets are loaded
-  useEffect(() => {
-    console.log("User pets updated:", userPets);
-  }, [userPets]);
-
   // Update selected pet when pet ID changes
   useEffect(() => {
-    console.log("Pet selection effect triggered:", { selectedPetId, userPetsCount: userPets.length });
-    
-    if (!selectedPetId) {
-      setSelectedPet(null);
+    if (!sellDialogOpen) {
+      // Don't update if dialog is closed
       return;
     }
-
-    if (userPets.length > 0) {
-      const petId = Number(selectedPetId);
-      const matchedPet = userPets.find(p => p.id === petId);
-      console.log("Looking for pet with ID:", petId, "Found:", matchedPet);
-      
-      if (matchedPet) {
-        console.log("Setting selected pet to:", matchedPet);
-        setSelectedPet(matchedPet);
+    
+    console.log("useEffect triggered", { 
+      selectedPetId, 
+      userPetsLength: userPets.length,
+      userPets: userPets.map(p => ({ id: p.id, name: p.name }))
+    });
+    
+    if (selectedPetId && userPets.length > 0) {
+      const petIdNum = Number(selectedPetId);
+      console.log("Looking for pet with ID:", petIdNum, "Type:", typeof petIdNum);
+      const pet = userPets.find(p => {
+        const match = p.id === petIdNum || String(p.id) === String(petIdNum);
+        console.log("Comparing:", p.id, "(type:", typeof p.id, ") with", petIdNum, "(type:", typeof petIdNum, ") Result:", match);
+        return match;
+      });
+      console.log("Found pet:", pet);
+      if (pet) {
+        console.log("Setting selected pet:", pet);
+        setSelectedPet(pet);
+        // Only set price if it's not already set by user
+        if (!listingPrice || listingPrice === "") {
+          setListingPrice(pet.price ? String(pet.price) : "");
+        }
+      } else {
+        console.log("Pet not found for ID:", selectedPetId, "Available IDs:", userPets.map(p => ({ id: p.id, type: typeof p.id })));
+        setSelectedPet(null);
       }
+    } else {
+      if (!selectedPetId) {
+        console.log("No selectedPetId");
+      }
+      if (userPets.length === 0) {
+        console.log("No userPets available");
+      }
+      setSelectedPet(null);
     }
-  }, [selectedPetId, userPets]);
+  }, [selectedPetId, userPets, sellDialogOpen]);
 
   const fetchUserPets = async () => {
     try {
       setLoadingPets(true);
-      console.log("Fetching user pets from /pets...");
       const response = await axiosClient.get("/pets");
-      console.log("Full response:", response);
-      console.log("Response data:", response.data);
-      
       if (response.data?.success) {
-        const petsData = response.data.data?.pets || [];
-        console.log("Pets data fetched:", petsData);
-        setUserPets(petsData);
+        setUserPets(response.data.data?.pets || []);
       } else {
-        console.log("Response not successful:", response.data);
         setUserPets([]);
       }
     } catch (error: any) {
       console.error("Failed to fetch pets:", error);
-      console.error("Error response:", error.response?.data);
       toast({
         title: "Error",
         description: "Failed to load your pets",
@@ -256,6 +171,8 @@ const Marketplace = () => {
     
     console.log("handleCreateListing called", { selectedPet, listingPrice });
     
+    const priceNum = Number(listingPrice);
+    
     if (!selectedPet) {
       toast({
         title: "Error",
@@ -265,8 +182,6 @@ const Marketplace = () => {
       return;
     }
 
-    const priceNum = Number(listingPrice);
-    
     if (!listingPrice || listingPrice.trim() === "" || isNaN(priceNum) || priceNum <= 0) {
       toast({
         title: "Error",
@@ -326,10 +241,74 @@ const Marketplace = () => {
     return baseURL + imageUrl;
   };
 
-  // Helper function to check if text matches search query
+  // Prefer listing.images (array) -> image_url (pet) -> image_urls (old) -> fallback
+  const getFirstImage = (item: any) => {
+    if (!item) return null;
+    // Primary source: backend `images` array (marketplace listings)
+    if (Array.isArray(item.images) && item.images.length > 0) return getImageUrl(item.images[0]) || item.images[0];
+    // Fallback for older user pet records
+    if (Array.isArray(item.image_urls) && item.image_urls.length > 0) return getImageUrl(item.image_urls[0]) || item.image_urls[0];
+    return null;
+  }
+
+  // Helper function to check if text matches search query (matches any word)
   const matchesSearch = (text: string, query: string): boolean => {
     if (!text || !query) return true
-    return text.toLowerCase().includes(query.toLowerCase())
+    const lowerText = text.toLowerCase()
+    const lowerQuery = query.toLowerCase()
+    // Split query into words and check if any word is found in the text
+    const queryWords = lowerQuery.split(/\s+/).filter(word => word.length > 0)
+    return queryWords.some(word => lowerText.includes(word))
+  }
+
+  // Helper function to determine if pet is a cat
+  const isCat = (pet: any): boolean => {
+    const name = pet.name?.toLowerCase() || ''
+    const breed = pet.breed?.toLowerCase() || ''
+    const combined = `${name} ${breed}`
+    
+    // Exclude dogs and other animals first
+    const isDogBreed = combined.includes('retriever') || combined.includes('shepherd') || 
+                       combined.includes('labrador') || combined.includes('puppy')
+    
+    if (isDogBreed) return false
+    
+    // Then check for cat breeds
+    return combined.includes('cat') || combined.includes('persian') || 
+           combined.includes('siamese') || combined.includes('british shorthair') || 
+           combined.includes('kitten')
+  }
+
+  // Helper function to determine if pet is a dog
+  const isDog = (pet: any): boolean => {
+    const name = pet.name?.toLowerCase() || ''
+    const breed = pet.breed?.toLowerCase() || ''
+    const description = pet.description?.toLowerCase() || ''
+    const combined = `${name} ${breed} ${description}`
+    return combined.includes('dog') || combined.includes('golden retriever') || 
+           combined.includes('german shepherd') || combined.includes('labrador') || 
+           combined.includes('puppy') || combined.includes('retriever') ||
+           combined.includes('shepherd')
+  }
+
+  // Helper function to determine if pet is a parrot
+  const isParrot = (pet: any): boolean => {
+    const name = pet.name?.toLowerCase() || ''
+    const breed = pet.breed?.toLowerCase() || ''
+    const description = pet.description?.toLowerCase() || ''
+    const combined = `${name} ${breed} ${description}`
+    return combined.includes('parrot') || combined.includes('macaw') || 
+           combined.includes('cockatoo') || combined.includes('budgie')
+  }
+
+  // Helper function to determine if pet is a rabbit
+  const isRabbit = (pet: any): boolean => {
+    const name = pet.name?.toLowerCase() || ''
+    const breed = pet.breed?.toLowerCase() || ''
+    const description = pet.description?.toLowerCase() || ''
+    const combined = `${name} ${breed} ${description}`
+    return combined.includes('rabbit') || combined.includes('bunny') || 
+           combined.includes('lop')
   }
 
   // Helper function to extract numeric price from string (e.g., "$500" or "Rs. 500")
@@ -357,13 +336,13 @@ const Marketplace = () => {
       if (activeFilter === "all") {
         return true
       } else if (activeFilter === "cats") {
-        return matchesSearch(pet.name, "cat") || matchesSearch(pet.breed, "cat") || matchesSearch(pet.description, "cat")
+        return isCat(pet)
       } else if (activeFilter === "dogs") {
-        return matchesSearch(pet.name, "dog") || matchesSearch(pet.breed, "dog") || matchesSearch(pet.description, "dog")
+        return isDog(pet)
       } else if (activeFilter === "parrot") {
-        return matchesSearch(pet.name, "parrot") || matchesSearch(pet.breed, "parrot") || matchesSearch(pet.description, "parrot")
+        return isParrot(pet)
       } else if (activeFilter === "rabbit") {
-        return matchesSearch(pet.name, "rabbit") || matchesSearch(pet.breed, "rabbit") || matchesSearch(pet.description, "rabbit")
+        return isRabbit(pet)
       } else if (activeFilter === "under500") {
         const price = extractPrice(pet.price || '')
         return price < 500
@@ -486,8 +465,8 @@ const Marketplace = () => {
               {/* Image */}
               <div className="relative aspect-square overflow-hidden">
                 <img 
-                  src={pet.image_url || cat1}
-                  alt={pet.pet_name || pet.name || 'Pet'}
+                  src={getFirstImage(pet) || cat1}
+                  alt={pet.pet_name || pet.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
@@ -511,16 +490,16 @@ const Marketplace = () => {
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-xl font-semibold text-foreground">{pet.pet_name || pet.name || 'N/A'}</h3>
-                    <p className="text-muted-foreground">{pet.breed || 'Unknown breed'}</p>
+                    <h3 className="text-xl font-semibold text-foreground">{pet.name}</h3>
+                    <p className="text-muted-foreground">{pet.breed}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">Rs. {pet.price || 'Contact'}</p>
-                    <p className="text-sm text-muted-foreground">{pet.age ? `${pet.age} years` : 'N/A'}</p>
+                    <p className="text-2xl font-bold text-primary">{pet.price}</p>
+                    <p className="text-sm text-muted-foreground">{pet.age}</p>
                   </div>
                 </div>
 
-                <p className="text-muted-foreground text-sm mb-4">{pet.description || 'No description available'}</p>
+                <p className="text-muted-foreground text-sm mb-4">{pet.description}</p>
 
                 {/* Features */}
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -538,26 +517,26 @@ const Marketplace = () => {
                 </div>
 
                 {/* Seller Info */}
-                {pet.seller_name && (
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-                    <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                  <div className="flex items-center space-x-2">
                       <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {pet.seller_name?.split(' ').map((n: string) => n[0]).join('') || 'S'}
+                          {(pet.seller || pet.seller_name || 'Seller').split(' ').map((n:string) => n[0]).join('')}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{pet.seller_name}</p>
-                        {pet.city && (
-                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                            <MapPin className="w-3 h-3" />
-                            {pet.city}
-                          </div>
-                        )}
+                        <p className="text-sm font-medium">{pet.seller || pet.seller_name || 'Seller'}</p>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                          <span className="text-xs text-muted-foreground">{pet.rating || '-'}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                    <div className="flex items-center text-muted-foreground text-xs">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      {pet.location || pet.city || '-'}
+                    </div>
+                </div>
 
                 {/* Actions */}
                 <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
@@ -617,8 +596,20 @@ const Marketplace = () => {
       </div>
 
       {/* Sell Pet Dialog */}
-      <Dialog open={sellDialogOpen} onOpenChange={setSellDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()}>
+      <Dialog 
+        open={sellDialogOpen} 
+        onOpenChange={(open) => {
+          setSellDialogOpen(open);
+          if (!open) {
+            // Reset all state when dialog closes
+            setSelectedPetId("");
+            setSelectedPet(null);
+            setAdditionalDescription("");
+            setListingPrice("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Pet Listing</DialogTitle>
             <DialogDescription>
@@ -626,7 +617,16 @@ const Marketplace = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (selectedPet && listingPrice) {
+                handleCreateListing();
+              }
+            }}
+            className="space-y-6 py-4"
+          >
             {/* Pet Selection */}
             <div>
               <label className="text-sm font-medium mb-2 block">Select Pet</label>
@@ -649,47 +649,87 @@ const Marketplace = () => {
                   </Button>
                 </div>
               ) : (
-                <div>
-                  <select
-                    value={selectedPetId}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      console.log("Pet selected (native select):", val);
-                      setSelectedPetId(val);
-                      // find and set selected pet immediately for preview
-                      const pet = userPets.find(p => String(p.id) === val);
-                      if (pet) setSelectedPet(pet);
-                    }}
-                    className="w-full border rounded px-3 py-2 bg-background"
-                  >
-                    <option value="">Choose a pet to sell</option>
-                    {userPets.map((pet) => (
-                      <option key={pet.id} value={String(pet.id)}>
-                        {pet.name}{pet.breed ? ` - ${pet.breed}` : ''}
-                      </option>
-                    ))}
-                  </select>
-
-                  {selectedPet && (
-                    <div className="mt-3 flex items-center gap-3">
-                      {selectedPet.image_urls && selectedPet.image_urls.length > 0 ? (
-                        <img
-                          src={getImageUrl(selectedPet.image_urls[0]) || ""}
-                          alt={selectedPet.name}
-                          className="w-12 h-12 rounded object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded bg-muted flex-shrink-0 flex items-center justify-center">
-                          <Heart className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-medium">{selectedPet.name}</div>
-                        <div className="text-xs text-muted-foreground">{selectedPet.breed || 'N/A'}</div>
+                <Select 
+                  value={selectedPetId || undefined} 
+                  onValueChange={(value) => {
+                    console.log("=== SELECT VALUE CHANGED ===");
+                    console.log("Value received:", value, "Type:", typeof value);
+                    console.log("Available pets:", userPets.map(p => ({ id: p.id, idType: typeof p.id, name: p.name })));
+                    
+                    // FIX #1: Ensure value is always a string (pet ID)
+                    const petIdStr = String(value);
+                    console.log("Setting selectedPetId to:", petIdStr);
+                    setSelectedPetId(petIdStr);
+                    
+                    // Immediately find and set the pet - robust matching
+                    const pet = userPets.find(p => {
+                      // Try both string and number comparison
+                      const strMatch = String(p.id) === petIdStr;
+                      const numMatch = Number(p.id) === Number(petIdStr);
+                      const match = strMatch || numMatch;
+                      console.log(`  Comparing pet.id=${p.id} (${typeof p.id}) with petIdStr="${petIdStr}": strMatch=${strMatch}, numMatch=${numMatch}, final=${match}`);
+                      return match;
+                    });
+                    
+                    if (pet) {
+                      console.log("✓ SUCCESS: Pet found and set:", pet);
+                      setSelectedPet(pet);
+                      // Only set price if it's empty
+                      if (!listingPrice || listingPrice.trim() === "") {
+                        setListingPrice(pet.price ? String(pet.price) : "");
+                      }
+                    } else {
+                      console.error("✗ ERROR: Pet NOT found!");
+                      console.error("  Searched for:", petIdStr);
+                      console.error("  Available IDs:", userPets.map(p => p.id));
+                      setSelectedPet(null);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-auto min-h-[2.5rem]">
+                    {selectedPetId && selectedPet ? (
+                      <div className="flex items-center gap-2 w-full">
+                        {selectedPet.image_urls && selectedPet.image_urls.length > 0 && (
+                          <img
+                            src={getImageUrl(selectedPet.image_urls[0]) || ""}
+                            alt={selectedPet.name}
+                            className="w-8 h-8 rounded object-cover flex-shrink-0"
+                          />
+                        )}
+                        <span className="flex-1 text-left">{selectedPet.name} - {selectedPet.breed}</span>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <SelectValue placeholder="Choose a pet to sell" />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {userPets.map((pet) => (
+                      <SelectItem 
+                        key={pet.id} 
+                        value={String(pet.id)}
+                        className="py-2 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 w-full pl-2">
+                          {pet.image_urls && pet.image_urls.length > 0 ? (
+                            <img
+                              src={getImageUrl(pet.image_urls[0]) || ""}
+                              alt={pet.name}
+                              className="w-10 h-10 rounded object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-muted flex-shrink-0 flex items-center justify-center">
+                              <Heart className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">{pet.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{pet.breed}</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
 
@@ -716,7 +756,7 @@ const Marketplace = () => {
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Breed</label>
-                    <p className="font-medium">{selectedPet.breed || 'N/A'}</p>
+                    <p className="font-medium">{selectedPet.breed}</p>
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Age</label>
@@ -724,18 +764,18 @@ const Marketplace = () => {
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Gender</label>
-                    <p className="font-medium capitalize">{selectedPet.gender || 'N/A'}</p>
+                    <p className="font-medium capitalize">{selectedPet.gender}</p>
                   </div>
                   {selectedPet.description && (
                     <div className="col-span-2">
                       <label className="text-sm text-muted-foreground">Description</label>
-                      <p className="font-medium text-sm">{selectedPet.description}</p>
+                      <p className="font-medium">{selectedPet.description}</p>
                     </div>
                   )}
                   {selectedPet.medical_history && (
                     <div className="col-span-2">
                       <label className="text-sm text-muted-foreground">Medical History</label>
-                      <p className="font-medium text-sm">{selectedPet.medical_history}</p>
+                      <p className="font-medium">{selectedPet.medical_history}</p>
                     </div>
                   )}
                 </div>
@@ -751,8 +791,15 @@ const Marketplace = () => {
                   min="0"
                   placeholder="Enter price"
                   value={listingPrice}
-                  onChange={(e) => setListingPrice(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    console.log("Price input changed:", value);
+                    setListingPrice(value);
+                  }}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Current state: selectedPet={selectedPet ? "✓" : "✗"}, price={listingPrice || "empty"}
+                </p>
               </div>
             )}
 
@@ -768,7 +815,7 @@ const Marketplace = () => {
                 />
               </div>
             )}
-          </div>
+          </form>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
@@ -790,8 +837,26 @@ const Marketplace = () => {
               Cancel
             </Button>
             <Button
-              onClick={handleCreateListing}
-              disabled={creatingListing || !selectedPet || !listingPrice || isNaN(Number(listingPrice)) || Number(listingPrice) <= 0}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Confirm button clicked", {
+                  selectedPet: !!selectedPet,
+                  listingPrice,
+                  creatingListing
+                });
+                if (selectedPet && listingPrice) {
+                  handleCreateListing(e);
+                }
+              }}
+              disabled={
+                creatingListing ||
+                !selectedPet || 
+                !listingPrice || 
+                listingPrice.trim() === "" || 
+                isNaN(Number(listingPrice)) || 
+                Number(listingPrice) <= 0
+              }
               type="button"
               className="min-w-[120px]"
             >

@@ -20,6 +20,7 @@ import AddPetPage from "./pages/AddPetPage";
 import PetPortalPage from "./pages/PetPortalPage";
 import VetDashboardPage from "./pages/VetDashboardPage";
 import PetDetailsPage from "./pages/PetDetailsPage";
+import VaccinationsPage from "./pages/VaccinationsPage";
 import ContactSellerPage from "./pages/ContactSellerPage";
 import MyPetsPage from "./pages/MyPetsPage";
 import AddEditMyPetPage from "./pages/AddEditMyPetPage";
@@ -86,6 +87,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <PetPortalPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pet-portal/vaccinations/:petId"
+              element={
+                <PrivateRoute>
+                  <VaccinationsPage />
                 </PrivateRoute>
               }
             />

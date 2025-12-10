@@ -65,20 +65,13 @@ const Navigation = () => {
                 </Link>
               </>
             ) : (
-              <>
-                <Link to="/my-pets">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <PawPrint className="w-4 h-4" />
-                    My Pets
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Hello, {user?.full_name}
                   </Button>
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      Hello, {user?.full_name}
-                    </Button>
-                  </DropdownMenuTrigger>
+                </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-background">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
@@ -102,6 +95,12 @@ const Navigation = () => {
                           My Pet Portal
                         </DropdownMenuItem>
                       </Link>
+                      <Link to="/my-pets">
+                        <DropdownMenuItem>
+                          <PawPrint className="w-4 h-4 mr-2" />
+                          My Pets
+                        </DropdownMenuItem>
+                      </Link>
                       <Link to="/add-pet">
                         <DropdownMenuItem>
                           <Plus className="w-4 h-4 mr-2" />
@@ -117,7 +116,6 @@ const Navigation = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              </>
             )}
           </div>
 
@@ -163,12 +161,6 @@ const Navigation = () => {
                   <div className="px-3 py-2 text-sm font-medium">
                     Hello, {user?.full_name}
                   </div>
-                  <Link to="/my-pets" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="justify-start w-full gap-2">
-                      <PawPrint className="w-4 h-4" />
-                      My Pets
-                    </Button>
-                  </Link>
                   {user?.role === 'vet' ? (
                     <Link to="/vet-dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="justify-start w-full gap-2">
@@ -182,6 +174,12 @@ const Navigation = () => {
                         <Button variant="ghost" className="justify-start w-full gap-2">
                           <Heart className="w-4 h-4" />
                           My Pet Portal
+                        </Button>
+                      </Link>
+                      <Link to="/my-pets" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="justify-start w-full gap-2">
+                          <PawPrint className="w-4 h-4" />
+                          My Pets
                         </Button>
                       </Link>
                       <Link to="/add-pet" onClick={() => setIsOpen(false)}>
