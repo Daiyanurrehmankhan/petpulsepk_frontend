@@ -5,10 +5,17 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import * as vaccinationsApi from '@/lib/api/vaccinations';
-import { Loader2, Upload, X, ArrowLeft, Plus, Syringe, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Upload, X, ArrowLeft, Plus, Syringe, Calendar, FileText, CheckCircle, AlertCircle, Eye } from 'lucide-react';
 
 const VaccinationsPage: React.FC = () => {
   const { petId } = useParams<{ petId: string }>();
@@ -17,6 +24,8 @@ const VaccinationsPage: React.FC = () => {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
+  const [selectedCertificateUrl, setSelectedCertificateUrl] = useState<string>('');
 
   const { data: vaccinations = [], isLoading } = useQuery({
     queryKey: ['vaccinations', petId],
@@ -89,6 +98,19 @@ const VaccinationsPage: React.FC = () => {
     const form = e.currentTarget;
     const fd = new FormData(form);
     fd.set('pet_id', petId);
+    
+    // Debug logging
+    console.log('=== VACCINATION FORM SUBMIT ===');
+    console.log('FormData entries:');
+    for (const [key, value] of fd.entries()) {
+      if (value instanceof File) {
+        console.log(`  ${key}: File(${value.name}, ${value.size} bytes, type: ${value.type})`);
+      } else {
+        console.log(`  ${key}: ${value}`);
+      }
+    }
+    console.log('===========================');
+    
     createMutation.mutate(fd);
   };
 
@@ -380,15 +402,36 @@ const VaccinationsPage: React.FC = () => {
                     )}
                     
                     {v.evidence_url && (
-                      <a 
-                        href={v.evidence_url} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                      >
-                        <FileText className="w-4 h-4" />
-                        View Certificate
-                      </a>
+                      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-start gap-3">
+                          <FileText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Certificate</p>
+                            {v.evidence_url.toLowerCase().endsWith('.pdf') ? (
+                              <a 
+                                href={v.evidence_url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center gap-2 w-fit"
+                              >
+                                View PDF Certificate
+                                <Eye className="w-4 h-4" />
+                              </a>
+                            ) : (
+                              <button 
+                                onClick={() => {
+                                  setSelectedCertificateUrl(v.evidence_url);
+                                  setCertificateModalOpen(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center gap-2 w-fit"
+                              >
+                                View Certificate Image
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                   
@@ -423,6 +466,36 @@ const VaccinationsPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Certificate Preview Modal */}
+      <Dialog open={certificateModalOpen} onOpenChange={setCertificateModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Vaccination Certificate</DialogTitle>
+            <DialogDescription>
+              Certificate preview
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCertificateUrl && (
+            <div className="flex flex-col gap-4">
+              <img 
+                src={selectedCertificateUrl} 
+                alt="Vaccination certificate" 
+                className="w-full h-auto rounded-lg border border-gray-200"
+              />
+              <a 
+                href={selectedCertificateUrl} 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                Open in new tab
+              </a>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

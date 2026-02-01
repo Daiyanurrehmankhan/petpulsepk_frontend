@@ -23,16 +23,12 @@ export const getVaccinations = async (petId: string) => {
 };
 
 export const createVaccination = async (payload: FormData) => {
-  const res = await axiosClient.post(`/health/vaccinations`, payload, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await axiosClient.post(`/health/vaccinations`, payload);
   return res.data.data.vaccination as Vaccination;
 };
 
 export const updateVaccination = async (id: string, payload: FormData) => {
-  const res = await axiosClient.put(`/health/vaccinations/${id}`, payload, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await axiosClient.put(`/health/vaccinations/${id}`, payload);
   return res.data.data.vaccination as Vaccination;
 };
 

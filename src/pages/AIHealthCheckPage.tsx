@@ -2,10 +2,16 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Upload, Camera, FileText, CheckCircle, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import pythonAi, { PredictionResponse } from "@/lib/api/pythonAi";
 
 const AIHealthCheckPage = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<PredictionResponse | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,25 +47,39 @@ const AIHealthCheckPage = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                      <Upload className="w-8 h-8 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-medium mb-2">Drop your image here</p>
-                      <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
-                      <div className="flex gap-4 justify-center">
-                        <Button variant="hero">
-                          <Upload className="w-4 h-4 mr-2" />
-                          Choose File
-                        </Button>
-                        <Button variant="outline">
-                          <Camera className="w-4 h-4 mr-2" />
-                          Take Photo
-                        </Button>
+                    <div className="space-y-4">
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                        <Upload className="w-8 h-8 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-medium mb-2">Drop your image here</p>
+                        <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
+                        <div className="flex gap-4 justify-center">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] || null;
+                              if (!f) return;
+                              setSelectedFile(f);
+                              setSelectedImage(URL.createObjectURL(f));
+                              setResult(null);
+                              setError(null);
+                            }}
+                          />
+                          <Button variant="hero" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose File
+                          </Button>
+                          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Camera className="w-4 h-4 mr-2" />
+                            Take Photo
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
                 )}
               </div>
 
@@ -71,6 +91,38 @@ const AIHealthCheckPage = () => {
                   <span className="px-3 py-1 bg-muted rounded-full text-xs">HEIC</span>
                 </div>
               </div>
+              {selectedImage && (
+                <div className="mt-4 flex items-center gap-3">
+                  <Button
+                    onClick={async () => {
+                      if (!selectedFile) return;
+                      setLoading(true);
+                      setError(null);
+                      setResult(null);
+                      try {
+                        const res = await pythonAi.predict(selectedFile);
+                        setResult(res);
+                      } catch (err: any) {
+                        setError(err?.response?.data?.message || err.message || 'Prediction failed');
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? 'Analyzing...' : 'Analyze Image'}
+                  </Button>
+
+                  <Button variant="outline" onClick={() => {
+                    setSelectedFile(null);
+                    setSelectedImage(null);
+                    setResult(null);
+                    setError(null);
+                  }}>
+                    Remove
+                  </Button>
+                </div>
+              )}
             </Card>
 
             {/* Analysis Results */}
@@ -78,12 +130,55 @@ const AIHealthCheckPage = () => {
               <h2 className="text-2xl font-bold mb-6">Analysis Results</h2>
               
               <div className="space-y-6">
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileText className="w-8 h-8 text-muted-foreground" />
+                {loading && (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText className="w-8 h-8 text-muted-foreground animate-pulse" />
+                    </div>
+                    <p className="text-muted-foreground">Analyzing image, please wait...</p>
                   </div>
-                  <p className="text-muted-foreground">Upload an image to start analysis</p>
-                </div>
+                )}
+
+                {error && (
+                  <div className="text-center py-8">
+                    <div className="text-red-600 font-semibold mb-3">Error</div>
+                    <p className="text-sm text-muted-foreground">{error}</p>
+                  </div>
+                )}
+
+                {result && (
+                  <div className="py-4">
+                    <h3 className="text-lg font-semibold text-center mb-4">Prediction</h3>
+                    <div className="text-center mb-4">
+                      <div className="text-2xl font-bold">{result.disease}</div>
+                      <div className="text-sm text-muted-foreground">Confidence: {result.confidencePercent ?? (result.confidence ? `${(result.confidence * 100).toFixed(2)}%` : 'N/A')}</div>
+                      <div className="mt-2 text-xs text-muted-foreground">{result.isConfident ? 'High confidence' : 'Low confidence'}</div>
+                    </div>
+
+                    {result.allProbabilities && (
+                      <div>
+                        <h4 className="font-medium mb-2">Probabilities</h4>
+                        <div className="space-y-2">
+                          {Object.entries(result.allProbabilities).map(([k, v]) => (
+                            <div key={k} className="flex justify-between text-sm">
+                              <div className="text-muted-foreground">{k}</div>
+                              <div className="font-medium">{(v * 100).toFixed(2)}%</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!loading && !error && !result && (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <p className="text-muted-foreground">Upload an image to start analysis</p>
+                  </div>
+                )}
               </div>
             </Card>
           </div>

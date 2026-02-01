@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 import { Heart, Activity, Calendar, Syringe, Pill, Weight, TrendingUp, Plus } from "lucide-react";
 import cat1 from "@/assets/cat-1.jpg";
 import cat2 from "@/assets/cat-2.jpg";
@@ -122,10 +123,12 @@ const HealthTrackerPage = () => {
 
                   {/* Actions */}
                   <div className="grid grid-cols-2 gap-3 pt-4 border-t">
-                    <Button variant="hero" className="w-full">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      View Records
-                    </Button>
+                    <Link to={`/pet-portal/vaccinations/${pet.id}`} className="w-full">
+                      <Button variant="hero" className="w-full">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        View Records
+                      </Button>
+                    </Link>
                     <Button variant="outline" className="w-full">
                       <TrendingUp className="w-4 h-4 mr-2" />
                       Health Trends
