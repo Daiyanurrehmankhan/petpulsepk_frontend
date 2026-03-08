@@ -25,6 +25,8 @@ import ContactSellerPage from "./pages/ContactSellerPage";
 import MyPetsPage from "./pages/MyPetsPage";
 import AddEditMyPetPage from "./pages/AddEditMyPetPage";
 import MyPetGalleryPage from "./pages/MyPetGalleryPage";
+import VetAppointmentsPage from "./pages/VetAppointmentsPage";
+import BookAppointmentPage from "./pages/BookAppointmentPage";
 
 const queryClient = new QueryClient();
 
@@ -78,7 +80,7 @@ const App = () => (
             <Route
               path="/add-pet"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <AddPetPage />
                 </PrivateRoute>
               }
@@ -86,7 +88,7 @@ const App = () => (
             <Route
               path="/pet-portal"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <PetPortalPage />
                 </PrivateRoute>
               }
@@ -94,7 +96,7 @@ const App = () => (
             <Route
               path="/pet-portal/vaccinations/:petId"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <VaccinationsPage />
                 </PrivateRoute>
               }
@@ -102,7 +104,7 @@ const App = () => (
             <Route
               path="/my-pets"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <MyPetsPage />
                 </PrivateRoute>
               }
@@ -110,7 +112,7 @@ const App = () => (
             <Route
               path="/my-pets/add"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <AddEditMyPetPage />
                 </PrivateRoute>
               }
@@ -118,7 +120,7 @@ const App = () => (
             <Route
               path="/my-pets/edit/:id"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <AddEditMyPetPage />
                 </PrivateRoute>
               }
@@ -126,7 +128,7 @@ const App = () => (
             <Route
               path="/my-pets/gallery/:petId"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['owner']}>
                   <MyPetGalleryPage />
                 </PrivateRoute>
               }
@@ -134,7 +136,7 @@ const App = () => (
             <Route
               path="/vet-dashboard"
               element={
-                <PrivateRoute>
+                <PrivateRoute allowedRoles={['vet']}>
                   <VetDashboardPage />
                 </PrivateRoute>
               }
@@ -148,6 +150,22 @@ const App = () => (
               }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route
+              path="/vet/appointments"
+              element={
+                <PrivateRoute allowedRoles={['vet']}>
+                  <VetAppointmentsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/book-appointment/:vetId"
+              element={
+                <PrivateRoute allowedRoles={['owner']}>
+                  <BookAppointmentPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

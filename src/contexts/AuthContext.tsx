@@ -7,6 +7,17 @@ interface User {
   full_name: string;
   email: string;
   role: 'owner' | 'vet';
+  phone?: string;
+  city?: string;
+  address?: string;
+  profile_image?: string;
+  is_verified?: boolean;
+  // Vet-specific fields
+  vet_license_number?: string;
+  vet_specialization?: string;
+  vet_experience_years?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface AuthContextType {

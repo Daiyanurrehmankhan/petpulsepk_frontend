@@ -1,12 +1,37 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
-export function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+interface PrivateRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: ('owner' | 'vet')[];
+}
+
+export function PrivateRoute({ children, allowedRoles }: PrivateRouteProps) {
+  const { isAuthenticated, user } = useAuth();
   const location = useLocation();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isAuthenticated && allowedRoles && user && !allowedRoles.includes(user.role)) {
+      toast({
+        title: "Access Denied",
+        description: `This page is only accessible to ${allowedRoles.join(' and ')}s.`,
+        variant: "destructive",
+      });
+    }
+  }, [isAuthenticated, allowedRoles, user]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check role-based access
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    // Redirect to appropriate dashboard based on user's actual role
+    const redirectTo = user.role === 'vet' ? '/vet-dashboard' : '/pet-portal';
+    return <Navigate to={redirectTo} replace />;
   }
 
   return <>{children}</>;
