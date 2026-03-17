@@ -18,6 +18,7 @@ import {
 import vetDoctor from "@/assets/vet-doctor.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMyAppointments, VetAppointment } from "@/lib/api/vetAppointments";
+import { getPetById } from "@/lib/api/pets";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday } from "date-fns";
 
@@ -26,6 +27,7 @@ const VetDashboard = () => {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<VetAppointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [petDetails, setPetDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (user?.role === "vet") {
@@ -38,6 +40,18 @@ const VetDashboard = () => {
       setLoading(true);
       const data = await getMyAppointments();
       setAppointments(data);
+      // Fetch pet details for all appointments with a pet_id
+      const petIds = Array.from(new Set(data.map((apt) => apt.pet_id).filter(Boolean)));
+      const petDetailsObj: Record<string, any> = {};
+      await Promise.all(
+        petIds.map(async (petId) => {
+          try {
+            const pet = await getPetById(petId);
+            if (pet) petDetailsObj[petId] = pet;
+          } catch {}
+        })
+      );
+      setPetDetails(petDetailsObj);
     } catch (error: any) {
       console.error("Failed to fetch appointments:", error);
       toast({
@@ -156,35 +170,51 @@ const VetDashboard = () => {
                 </div>
               ) : upcomingAppointments.length > 0 ? (
                 <div className="space-y-4">
-                  {upcomingAppointments.map((appointment) => (
-                    <div
-                      key={appointment.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
-                          <Clock className="w-6 h-6 text-white" />
+                  {upcomingAppointments.map((appointment) => {
+                    const pet = appointment.pet_id ? petDetails[appointment.pet_id] : null;
+                    return (
+                      <div
+                        key={appointment.id}
+                        className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
+                            <Clock className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {appointment.pet_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {appointment.client_name || "Unknown Client"}
+                            </p>
+                            {pet && (
+                              <div className="mt-1 text-xs text-muted-foreground bg-muted/40 rounded p-2">
+                                <div><span className="font-medium">Breed:</span> {pet.breed}</div>
+                                <div><span className="font-medium">Age:</span> {pet.age}</div>
+                                <div><span className="font-medium">Gender:</span> {pet.gender}</div>
+                                {pet.medical_history && (
+                                  <div><span className="font-medium">Medical History:</span> {pet.medical_history}</div>
+                                )}
+                                {pet.description && (
+                                  <div><span className="font-medium">Description:</span> {pet.description}</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {appointment.pet_name}
+                        <div className="text-right">
+                          <p className="font-medium text-primary">
+                            {format(new Date(appointment.appointment_date), "MMM dd")} at{" "}
+                            {appointment.appointment_time.substring(0, 5)}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {appointment.client_name || "Unknown Client"}
-                          </p>
+                          <Badge variant="secondary" className="text-xs">
+                            {appointment.pet_type}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-primary">
-                          {format(new Date(appointment.appointment_date), "MMM dd")} at{" "}
-                          {appointment.appointment_time.substring(0, 5)}
-                        </p>
-                        <Badge variant="secondary" className="text-xs">
-                          {appointment.pet_type}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
@@ -217,42 +247,58 @@ const VetDashboard = () => {
                 </div>
               ) : consultationRequests.length > 0 ? (
                 <div className="space-y-4">
-                  {consultationRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-secondary rounded-lg flex items-center justify-center">
-                          <MessageCircle className="w-6 h-6 text-white" />
+                  {consultationRequests.map((request) => {
+                    const pet = request.pet_id ? petDetails[request.pet_id] : null;
+                    return (
+                      <div
+                        key={request.id}
+                        className="flex items-center justify-between p-4 rounded-lg bg-muted/30"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-secondary rounded-lg flex items-center justify-center">
+                            <MessageCircle className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{request.pet_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {request.client_name}
+                            </p>
+                            {pet && (
+                              <div className="mt-1 text-xs text-muted-foreground bg-muted/40 rounded p-2">
+                                <div><span className="font-medium">Breed:</span> {pet.breed}</div>
+                                <div><span className="font-medium">Age:</span> {pet.age}</div>
+                                <div><span className="font-medium">Gender:</span> {pet.gender}</div>
+                                {pet.medical_history && (
+                                  <div><span className="font-medium">Medical History:</span> {pet.medical_history}</div>
+                                )}
+                                {pet.description && (
+                                  <div><span className="font-medium">Description:</span> {pet.description}</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">{request.pet_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {request.client_name}
-                          </p>
+                        <div className="flex items-center space-x-3">
+                          <div className="text-right">
+                            <Badge variant="secondary" className="text-xs">
+                              {request.booking_type}
+                            </Badge>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {format(new Date(request.created_at), "MMM dd, h:mm a")}
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button variant="outline" size="sm">
+                              <Phone className="w-4 h-4" />
+                            </Button>
+                            <Button variant="default" size="sm">
+                              <Video className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="text-right">
-                          <Badge variant="secondary" className="text-xs">
-                            {request.booking_type}
-                          </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {format(new Date(request.created_at), "MMM dd, h:mm a")}
-                          </p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Phone className="w-4 h-4" />
-                          </Button>
-                          <Button variant="default" size="sm">
-                            <Video className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">

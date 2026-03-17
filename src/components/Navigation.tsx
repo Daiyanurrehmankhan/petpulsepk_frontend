@@ -25,6 +25,13 @@ const Navigation = () => {
     { name: "Contact", icon: Mail, href: "/contact" },
   ];
 
+  const visibleNavigationItems =
+    user?.role === "vet"
+      ? navigationItems.filter(
+          (item) => item.name !== "Find Vets" && item.name !== "Health Tracker"
+        )
+      : navigationItems;
+
   return (
     <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,7 +48,7 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => (
+            {visibleNavigationItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -135,7 +142,7 @@ const Navigation = () => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-2">
-            {navigationItems.map((item) => (
+            {visibleNavigationItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}

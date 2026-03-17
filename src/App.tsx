@@ -50,7 +50,14 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route path="/find-vets" element={<FindVetsPage />} />
+            <Route
+              path="/find-vets"
+              element={
+                <PrivateRoute>
+                  <FindVetsPage />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/health-tracker"
               element={

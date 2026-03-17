@@ -12,6 +12,7 @@ import {
   updateAppointmentStatus,
   VetAppointment,
 } from "@/lib/api/vetAppointments";
+import { getPetById } from "@/lib/api/pets";
 
 // Badge variant mapping for each status
 const statusVariant: Record<
@@ -32,6 +33,7 @@ const VetAppointmentsPage = () => {
   const [appointments, setAppointments] = useState<VetAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [petDetails, setPetDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -46,6 +48,18 @@ const VetAppointmentsPage = () => {
       setLoading(true);
       const data = await getMyAppointments();
       setAppointments(data);
+      // Fetch pet details for all appointments with a pet_id
+      const petIds = Array.from(new Set(data.map((appt) => appt.pet_id).filter(Boolean)));
+      const petDetailsObj: Record<string, any> = {};
+      await Promise.all(
+        petIds.map(async (petId) => {
+          try {
+            const pet = await getPetById(petId);
+            if (pet) petDetailsObj[petId] = pet;
+          } catch {}
+        })
+      );
+      setPetDetails(petDetailsObj);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -143,111 +157,130 @@ const VetAppointmentsPage = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {appointments.map((appt) => (
-              <Card
-                key={appt.id}
-                className="overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {appt.pet_name}
-                        <span className="ml-2 text-sm font-normal text-muted-foreground">
-                          ({appt.pet_type})
+            {appointments.map((appt) => {
+              const pet = appt.pet_id ? petDetails[appt.pet_id] : null;
+              return (
+                <Card
+                  key={appt.id}
+                  className="overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {appt.pet_name}
+                          <span className="ml-2 text-sm font-normal text-muted-foreground">
+                            ({appt.pet_type})
+                          </span>
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          {user?.role === "vet"
+                            ? `Client: ${appt.client_name}`
+                            : `Vet: ${appt.vet_name}`}
+                        </p>
+                        {pet && (
+                          <div className="mt-2 p-3 rounded bg-muted/40">
+                            <div className="font-semibold mb-1">Pet Bio & Medical History</div>
+                            <div className="text-sm text-muted-foreground">
+                              <div><span className="font-medium">Breed:</span> {pet.breed}</div>
+                              <div><span className="font-medium">Age:</span> {pet.age}</div>
+                              <div><span className="font-medium">Gender:</span> {pet.gender}</div>
+                              {pet.medical_history && (
+                                <div><span className="font-medium">Medical History:</span> {pet.medical_history}</div>
+                              )}
+                              {pet.description && (
+                                <div><span className="font-medium">Description:</span> {pet.description}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs font-medium">
+                          {appt.booking_type}
+                        </Badge>
+                        <Badge variant={statusVariant[appt.status]}>
+                          {appt.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 gap-3 text-sm mb-4">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <span>
+                          {appt.appointment_date} at{" "}
+                          {appt.appointment_time.slice(0, 5)}
                         </span>
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {user?.role === "vet"
-                          ? `Client: ${appt.client_name}`
-                          : `Vet: ${appt.vet_name}`}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs font-medium">
-                        {appt.booking_type}
-                      </Badge>
-                      <Badge variant={statusVariant[appt.status]}>
-                        {appt.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="grid sm:grid-cols-2 gap-3 text-sm mb-4">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4 flex-shrink-0" />
-                      <span>
-                        {appt.appointment_date} at{" "}
-                        {appt.appointment_time.slice(0, 5)}
-                      </span>
-                    </div>
-                    {appt.notes && (
-                      <div className="text-muted-foreground sm:col-span-2">
-                        <span className="font-medium text-foreground">Notes: </span>
-                        {appt.notes}
                       </div>
-                    )}
-                  </div>
+                      {appt.notes && (
+                        <div className="text-muted-foreground sm:col-span-2">
+                          <span className="font-medium text-foreground">Notes: </span>
+                          {appt.notes}
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Action buttons — vets only, non-terminal statuses only */}
-                  {user?.role === "vet" &&
-                    appt.status !== "REJECTED" &&
-                    appt.status !== "COMPLETED" && (
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {appt.status === "PENDING" && (
-                          <>
+                    {/* Action buttons — vets only, non-terminal statuses only */}
+                    {user?.role === "vet" &&
+                      appt.status !== "REJECTED" &&
+                      appt.status !== "COMPLETED" && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {appt.status === "PENDING" && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="gap-1.5"
+                                disabled={updating === appt.id}
+                                onClick={() => handleStatusChange(appt.id, "APPROVED")}
+                              >
+                                {updating === appt.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-3 h-3" />
+                                )}
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="gap-1.5"
+                                disabled={updating === appt.id}
+                                onClick={() => handleStatusChange(appt.id, "REJECTED")}
+                              >
+                                {updating === appt.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-3 h-3" />
+                                )}
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                          {appt.status === "APPROVED" && (
                             <Button
                               size="sm"
+                              variant="outline"
                               className="gap-1.5"
                               disabled={updating === appt.id}
-                              onClick={() => handleStatusChange(appt.id, "APPROVED")}
+                              onClick={() => handleStatusChange(appt.id, "COMPLETED")}
                             >
                               {updating === appt.id ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
                               ) : (
-                                <CheckCircle className="w-3 h-3" />
+                                <Clock className="w-3 h-3" />
                               )}
-                              Approve
+                              Mark Completed
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="gap-1.5"
-                              disabled={updating === appt.id}
-                              onClick={() => handleStatusChange(appt.id, "REJECTED")}
-                            >
-                              {updating === appt.id ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                <XCircle className="w-3 h-3" />
-                              )}
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {appt.status === "APPROVED" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1.5"
-                            disabled={updating === appt.id}
-                            onClick={() => handleStatusChange(appt.id, "COMPLETED")}
-                          >
-                            {updating === appt.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Clock className="w-3 h-3" />
-                            )}
-                            Mark Completed
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                </CardContent>
-              </Card>
-            ))}
+                          )}
+                        </div>
+                      )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

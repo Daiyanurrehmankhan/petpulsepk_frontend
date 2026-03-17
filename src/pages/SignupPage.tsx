@@ -15,7 +15,11 @@ import { useAuth } from "@/contexts/AuthContext";
 const signupSchema = z.object({
   full_name: z.string().min(2, { message: "Full name must be at least 2 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: z.string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .regex(/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/, {
+      message: "Password must include at least 1 uppercase letter, 1 number, and 1 symbol",
+    }),
   confirmPassword: z.string(),
   role: z.enum(["owner", "vet"], { required_error: "Please select a role" }),
   phone: z.string().regex(/^(\+92|0)?[0-9]{10}$/, { message: "Invalid phone number format" }).optional(),
@@ -23,17 +27,19 @@ const signupSchema = z.object({
   vet_license_number: z.string().optional(),
   vet_specialization: z.string().optional(),
   vet_experience_years: z.number().min(0).optional(),
+  practice_start_time: z.string().optional(), // e.g. "09:00"
+  practice_end_time: z.string().optional(),   // e.g. "17:00"
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 })
 .refine((data) => {
   if (data.role === "vet") {
-    return !!data.vet_license_number && !!data.vet_specialization && data.vet_experience_years !== undefined;
+    return !!data.vet_license_number && !!data.vet_specialization && data.vet_experience_years !== undefined && !!data.practice_start_time && !!data.practice_end_time;
   }
   return true;
 }, {
-  message: "Veterinary details are required for vet registration",
+  message: "Veterinary details and practice hours are required for vet registration",
   path: ["role"],
 });
 
@@ -55,6 +61,8 @@ const SignupPage = () => {
       vet_license_number: "",
       vet_specialization: "",
       vet_experience_years: 0,
+      practice_start_time: "",
+      practice_end_time: "",
     },
   });
   
@@ -229,6 +237,32 @@ const SignupPage = () => {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="practice_start_time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Practice Start Time</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="practice_end_time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Practice End Time</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </>
                 )}
                 
@@ -239,35 +273,11 @@ const SignupPage = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your password" type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Confirm your password" type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
                         <Input placeholder="Create a password" type="password" {...field} />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Use at least 6 characters, including 1 uppercase letter, 1 number, and 1 symbol.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
