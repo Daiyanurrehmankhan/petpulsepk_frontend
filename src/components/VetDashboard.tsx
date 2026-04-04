@@ -11,8 +11,6 @@ import {
   Clock,
   TrendingUp,
   Award,
-  Phone,
-  Video,
   Loader2,
 } from "lucide-react";
 import vetDoctor from "@/assets/vet-doctor.jpg";
@@ -287,14 +285,6 @@ const VetDashboard = () => {
                               {format(new Date(request.created_at), "MMM dd, h:mm a")}
                             </p>
                           </div>
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">
-                              <Phone className="w-4 h-4" />
-                            </Button>
-                            <Button variant="default" size="sm">
-                              <Video className="w-4 h-4" />
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     );
@@ -353,33 +343,6 @@ const VetDashboard = () => {
               </div>
             </Card>
 
-            {/* Quick Actions */}
-            <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <Button variant="default" className="w-full justify-start" asChild>
-                  <a href="/vet/appointments">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    View All Appointments
-                  </a>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/pet-portal">
-                    <Users className="w-4 h-4 mr-2" />
-                    View Patients
-                  </a>
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Start Consultation
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Stethoscope className="w-4 h-4 mr-2" />
-                  Medical Records
-                </Button>
-              </div>
-            </Card>
-
             {/* Platform Info */}
             <Card className="p-6 bg-gradient-accent/10 border-accent/20">
               <div className="text-center">
@@ -393,7 +356,7 @@ const VetDashboard = () => {
                   Connect with thousands of pet owners and grow your practice.
                 </p>
                 <Button variant="accent" className="w-full" asChild>
-                  <a href="/find-vets">Explore Platform</a>
+                  <a href="/marketplace">Explore Platform</a>
                 </Button>
               </div>
             </Card>

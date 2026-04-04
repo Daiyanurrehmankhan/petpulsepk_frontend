@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import VetDashboard from "@/components/VetDashboard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -181,12 +180,6 @@ const FindVetsPage = () => {
             </div>
           )}
 
-          {/* Vet Dashboard Preview */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-center mb-2">Are You a Veterinarian?</h2>
-            <p className="text-center text-muted-foreground mb-8">Join our platform and start helping pet owners across Pakistan</p>
-            <VetDashboard />
-          </div>
         </div>
       </section>
     </div>
