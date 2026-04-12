@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail, LogOut, Plus, User, PawPrint } from "lucide-react";
+import { Menu, X, Heart, ShoppingBag, Stethoscope, Brain, Info, Mail, LogOut, Plus, User, PawPrint, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -21,6 +21,7 @@ const Navigation = () => {
     { name: "AI Health Check", icon: Brain, href: "/ai-health-check" },
     { name: "Find Vets", icon: Stethoscope, href: "/find-vets" },
     { name: "Health Tracker", icon: Heart, href: "/health-tracker" },
+    { name: "Lost & Found", icon: Search, href: "/lost-and-found" },
     { name: "About", icon: Info, href: "/about" },
     { name: "Contact", icon: Mail, href: "/contact" },
   ];

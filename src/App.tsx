@@ -27,6 +27,7 @@ import AddEditMyPetPage from "./pages/AddEditMyPetPage";
 import MyPetGalleryPage from "./pages/MyPetGalleryPage";
 import VetAppointmentsPage from "./pages/VetAppointmentsPage";
 import BookAppointmentPage from "./pages/BookAppointmentPage";
+import PetsLostAndFoundPage from "./pages/PetsLostAndFoundPage";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
             />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/lost-and-found" element={<PetsLostAndFoundPage />} />
             <Route
               path="/login"
               element={
