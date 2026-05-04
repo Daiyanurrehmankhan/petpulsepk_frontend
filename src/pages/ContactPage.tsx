@@ -3,9 +3,23 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import axiosClient from "@/lib/api/axios-client";
+import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin, MessageSquare, Clock } from "lucide-react";
 
 const ContactPage = () => {
+  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+  });
+
   const contactInfo = [
     {
       icon: Mail,
@@ -33,6 +47,46 @@ const ContactPage = () => {
     }
   ];
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      setSubmitting(true);
+      const res = await axiosClient.post('/users/contact', formData);
+
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || 'Failed to send message');
+      }
+
+      toast({
+        title: 'Message Sent',
+        description: 'Your message has been sent successfully. We will contact you soon.',
+      });
+
+      setFormData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to send message',
+        description: error.message || 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -57,44 +111,79 @@ const ContactPage = () => {
             {/* Contact Form */}
             <Card className="lg:col-span-2 p-8">
               <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium mb-2">First Name</label>
-                    <Input placeholder="John" />
+                    <Input
+                      name="first_name"
+                      placeholder="John"
+                      value={formData.first_name}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Last Name</label>
-                    <Input placeholder="Doe" />
+                    <Input
+                      name="last_name"
+                      placeholder="Doe"
+                      value={formData.last_name}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium mb-2">Email</label>
-                  <Input type="email" placeholder="john@example.com" />
+                  <Input
+                    name="email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Phone Number</label>
-                  <Input type="tel" placeholder="+92 300 1234567" />
+                  <Input
+                    name="phone"
+                    type="tel"
+                    placeholder="+92 300 1234567"
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Subject</label>
-                  <Input placeholder="How can we help?" />
+                  <Input
+                    name="subject"
+                    placeholder="How can we help?"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Message</label>
                   <Textarea 
+                    name="message"
                     placeholder="Tell us more about your inquiry..." 
                     className="min-h-32"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
 
-                <Button variant="hero" size="lg" className="w-full">
+                <Button variant="hero" size="lg" className="w-full" type="submit" disabled={submitting}>
                   <Mail className="w-4 h-4 mr-2" />
-                  Send Message
+                  {submitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </Card>

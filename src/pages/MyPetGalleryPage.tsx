@@ -105,7 +105,7 @@ const MyPetGalleryPage = () => {
       console.error("Failed to fetch pet or pictures:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to load pet gallery",
+        description: error.message || "Failed to load pet gallery",
         variant: "destructive",
       });
       navigate("/my-pets");
@@ -181,7 +181,7 @@ const MyPetGalleryPage = () => {
       console.error("Upload failed:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to upload picture",
+        description: error.message || "Failed to upload picture",
         variant: "destructive",
       });
     } finally {
@@ -221,7 +221,7 @@ const MyPetGalleryPage = () => {
       console.error("Update failed:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update caption",
+        description: error.message || "Failed to update caption",
         variant: "destructive",
       });
     } finally {
@@ -262,7 +262,7 @@ const MyPetGalleryPage = () => {
       console.error("Delete failed:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to delete picture",
+        description: error.message || "Failed to delete picture",
         variant: "destructive",
       });
     } finally {

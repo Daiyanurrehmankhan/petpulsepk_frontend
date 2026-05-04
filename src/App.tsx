@@ -15,6 +15,7 @@ import HealthTrackerPage from "./pages/HealthTrackerPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import SignupPage from "./pages/SignupPage";
 import AddPetPage from "./pages/AddPetPage";
 import PetPortalPage from "./pages/PetPortalPage";
@@ -87,6 +88,14 @@ const App = () => (
               }
             />
             <Route
+              path="/forgot-password"
+              element={
+                <PublicOnlyRoute>
+                  <ForgotPasswordPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
               path="/add-pet"
               element={
                 <PrivateRoute allowedRoles={['owner']}>
@@ -118,14 +127,7 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/my-pets/add"
-              element={
-                <PrivateRoute allowedRoles={['owner']}>
-                  <AddEditMyPetPage />
-                </PrivateRoute>
-              }
-            />
+
             <Route
               path="/my-pets/edit/:id"
               element={

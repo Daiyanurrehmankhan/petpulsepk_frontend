@@ -53,7 +53,7 @@ const LoginPage = () => {
         throw new Error(responseData.message || "Login failed");
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "An error occurred during login";
+      const errorMessage = error.message || "An error occurred during login";
       toast({
         title: "Login Failed",
         description: errorMessage,
@@ -113,6 +113,12 @@ const LoginPage = () => {
               Don't have an account?{" "}
               <Link to="/signup" className="text-primary hover:underline font-medium">
                 Sign up
+              </Link>
+            </div>
+            <div className="text-sm text-center text-muted-foreground">
+              Forgot your password?{" "}
+              <Link to="/forgot-password" className="text-primary hover:underline font-medium">
+                Reset it here
               </Link>
             </div>
           </CardFooter>

@@ -4,10 +4,12 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import axiosClient from "@/lib/api/axios-client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Edit, Trash2, PawPrint, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit, Trash2, PawPrint, Loader2, Image as ImageIcon, ShoppingCart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,8 +39,12 @@ const MyPetsPage = () => {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [sellDialogOpen, setSellDialogOpen] = useState(false);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [listingPrice, setListingPrice] = useState("");
+  const [additionalDescription, setAdditionalDescription] = useState("");
+  const [creatingListing, setCreatingListing] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -115,6 +121,66 @@ const MyPetsPage = () => {
     navigate(`/my-pets/edit/${selectedPet.id}`);
   };
 
+  const handleSellClick = (pet: Pet) => {
+    setSelectedPet(pet);
+    setSellDialogOpen(true);
+    setListingPrice("");
+    setAdditionalDescription("");
+  };
+
+  const handleCreateListing = async () => {
+    if (!selectedPet) return;
+
+    const priceNum = Number(listingPrice);
+
+    if (!listingPrice || listingPrice.trim() === "" || isNaN(priceNum) || priceNum <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid price",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setCreatingListing(true);
+
+      const listingData = {
+        pet_id: selectedPet.id,
+        price: priceNum,
+        title: `${selectedPet.name}${selectedPet.breed ? ` - ${selectedPet.breed}` : ''}`,
+        description: additionalDescription || selectedPet.medical_history || "",
+        breed: selectedPet.breed || null,
+        age: selectedPet.age || null,
+        gender: selectedPet.gender || null,
+        medical_history: selectedPet.medical_history || null,
+      };
+
+      const response = await axiosClient.post("/marketplace/listings", listingData);
+
+      if (response.data?.success) {
+        toast({
+          title: "Success",
+          description: "Pet listing created successfully!",
+        });
+        setSellDialogOpen(false);
+        setSelectedPet(null);
+        setListingPrice("");
+        setAdditionalDescription("");
+      } else {
+        throw new Error(response.data?.message || "Failed to create listing");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create listing",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingListing(false);
+    }
+  };
+
   const getImageUrl = (imageUrl?: string) => {
     if (!imageUrl) return null;
     if (imageUrl.startsWith("http")) return imageUrl;
@@ -137,7 +203,7 @@ const MyPetsPage = () => {
             </p>
           </div>
           <Button
-            onClick={() => navigate("/my-pets/add")}
+            onClick={() => navigate("/add-pet")}
             className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -158,7 +224,7 @@ const MyPetsPage = () => {
             <p className="text-muted-foreground mb-6">
               Start by adding your first pet to track their information
             </p>
-            <Button onClick={() => navigate("/my-pets/add")}>
+            <Button onClick={() => navigate("/add-pet")}>
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Pet
             </Button>
@@ -221,6 +287,14 @@ const MyPetsPage = () => {
                     >
                       <ImageIcon className="w-4 h-4 mr-2" />
                       Picture Gallery
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => handleSellClick(pet)}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Sell Pet
                     </Button>
                     <div className="flex gap-2">
                       <Button
@@ -307,6 +381,91 @@ const MyPetsPage = () => {
             </Button>
             <Button onClick={confirmEdit}>
               Continue to Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sell Pet Dialog */}
+      <Dialog open={sellDialogOpen} onOpenChange={setSellDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sell {selectedPet?.name}</DialogTitle>
+            <DialogDescription>
+              List your pet on the marketplace. Set a price and add any additional information.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Pet Details Preview */}
+            {selectedPet && (
+              <div className="border rounded-lg p-3 bg-muted/30">
+                <p className="text-sm font-medium mb-2">Pet Details</p>
+                <div className="text-sm space-y-1">
+                  <p><span className="font-medium">Name:</span> {selectedPet.name}</p>
+                  <p><span className="font-medium">Breed:</span> {selectedPet.breed}</p>
+                  <p><span className="font-medium">Age:</span> {selectedPet.age} {selectedPet.age === 1 ? 'year' : 'years'}</p>
+                  <p><span className="font-medium">Gender:</span> {selectedPet.gender}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Price Input */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Listing Price *</label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="Enter price"
+                value={listingPrice}
+                onChange={(e) => setListingPrice(e.target.value)}
+              />
+            </div>
+
+            {/* Additional Description */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Additional Description (Optional)</label>
+              <Textarea
+                placeholder="Add any additional information about this pet listing..."
+                value={additionalDescription}
+                onChange={(e) => setAdditionalDescription(e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSellDialogOpen(false);
+                setSelectedPet(null);
+                setListingPrice("");
+                setAdditionalDescription("");
+              }}
+              disabled={creatingListing}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateListing}
+              disabled={
+                creatingListing ||
+                !selectedPet || 
+                !listingPrice || 
+                listingPrice.trim() === "" || 
+                isNaN(Number(listingPrice)) || 
+                Number(listingPrice) <= 0
+              }
+            >
+              {creatingListing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Listing"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

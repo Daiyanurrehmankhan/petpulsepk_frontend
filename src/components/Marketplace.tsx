@@ -18,7 +18,6 @@ import { useEffect, useState, useMemo } from 'react'
 import axiosClient from '@/lib/api/axios-client'
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import cat1 from "@/assets/cat-1.jpg";
 
 interface Pet {
   id: number;
@@ -35,6 +34,8 @@ interface Pet {
   pet_name?: string; // when listing joins pet table this may be returned as pet_name
   seller_name?: string; // backend returns seller_name
   city?: string; // seller city
+  title?: string;
+  full_description?: string;
 }
 
 const Marketplace = () => {
@@ -46,6 +47,7 @@ const Marketplace = () => {
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState<string>("")
+  const [sortBy, setSortBy] = useState<string>("newest")
   
   // Sell pet dialog state
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
@@ -59,6 +61,22 @@ const Marketplace = () => {
 
   // listings are fetched from the backend; no hardcoded demo data
 
+  // Fetch listings function
+  const fetchListings = async () => {
+    try {
+      const res = await axiosClient.get('/marketplace/listings')
+      const { data } = res
+      if (data?.success && Array.isArray(data.data?.listings)) {
+        setListings(data.data.listings)
+      } else {
+        setListings([])
+      }
+    } catch (err) {
+      console.error('Failed to load listings', err)
+      setListings([])
+    }
+  }
+
   useEffect(() => {
     // // Temporarily using hardcoded data instead of API call
     // setListings(sampleListings)
@@ -67,25 +85,16 @@ const Marketplace = () => {
     // Uncomment below when backend is ready
     
     let mounted = true
-    const fetchListings = async () => {
+
+    const loadListings = async () => {
       try {
-        const res = await axiosClient.get('/marketplace/listings')
-        if (!mounted) return
-        const { data } = res
-        if (data?.success && Array.isArray(data.data?.listings)) {
-          setListings(data.data.listings)
-        } else {
-          setListings([])
-        }
-      } catch (err) {
-        console.error('Failed to load listings', err)
-        setListings([])
+        await fetchListings()
       } finally {
         if (mounted) setLoading(false)
       }
     }
 
-    fetchListings()
+    loadListings()
     return () => { mounted = false }
     
   }, [])
@@ -194,7 +203,7 @@ const Marketplace = () => {
         pet_id: selectedPet.id,
         price: priceNum,
         title: `${selectedPet.name}${selectedPet.breed ? ` - ${selectedPet.breed}` : ''}`,
-        description: additionalDescription || selectedPet.description || "",
+        description: additionalDescription || selectedPet.medical_history || `${selectedPet.name}${selectedPet.breed ? ` (${selectedPet.breed})` : ""}`,
         breed: selectedPet.breed || null,
         age: selectedPet.age || null,
         gender: selectedPet.gender || null,
@@ -213,15 +222,15 @@ const Marketplace = () => {
         setSelectedPet(null);
         setAdditionalDescription("");
         setListingPrice("");
-        // Refresh listings
-        // You can add fetchListings() here when backend is ready
+        // Refresh listings to show the newly created listing
+        await fetchListings();
       } else {
         throw new Error(response.data?.message || "Failed to create listing");
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || error.message || "Failed to create listing",
+        description: error.message || "Failed to create listing",
         variant: "destructive",
       });
     } finally {
@@ -234,6 +243,26 @@ const Marketplace = () => {
     if (imageUrl.startsWith("http")) return imageUrl;
     const baseURL = import.meta.env.VITE_API_URL?.replace(/\/api\/v1\/?$/, "") || "";
     return baseURL + imageUrl;
+  };
+
+  const getDisplayName = (item: any) => {
+    return item?.name || item?.pet_name || item?.title || "Pet";
+  };
+
+  const getDisplayDescription = (item: any) => {
+    return item?.description || item?.full_description || item?.medical_history || "No description provided.";
+  };
+
+  const getDisplayPrice = (item: any) => {
+    const priceValue = typeof item?.price === "number" ? item.price : Number(item?.price || 0);
+    if (!Number.isFinite(priceValue) || priceValue <= 0) return "Price not set";
+    return `$${priceValue.toLocaleString()}`;
+  };
+
+  const getDisplayAge = (item: any) => {
+    const ageValue = typeof item?.age === "number" ? item.age : Number(item?.age);
+    if (!Number.isFinite(ageValue) || ageValue < 0) return "Age not specified";
+    return `${ageValue} ${ageValue === 1 ? "year" : "years"} old`;
   };
 
   // Prefer listing.images (array) -> image_url (pet) -> image_urls (old) -> fallback
@@ -258,7 +287,7 @@ const Marketplace = () => {
 
   // Helper function to determine if pet is a cat
   const isCat = (pet: any): boolean => {
-    const name = pet.name?.toLowerCase() || ''
+    const name = getDisplayName(pet).toLowerCase()
     const breed = pet.breed?.toLowerCase() || ''
     const combined = `${name} ${breed}`
     
@@ -276,9 +305,9 @@ const Marketplace = () => {
 
   // Helper function to determine if pet is a dog
   const isDog = (pet: any): boolean => {
-    const name = pet.name?.toLowerCase() || ''
+    const name = getDisplayName(pet).toLowerCase()
     const breed = pet.breed?.toLowerCase() || ''
-    const description = pet.description?.toLowerCase() || ''
+    const description = getDisplayDescription(pet).toLowerCase()
     const combined = `${name} ${breed} ${description}`
     return combined.includes('dog') || combined.includes('golden retriever') || 
            combined.includes('german shepherd') || combined.includes('labrador') || 
@@ -288,9 +317,9 @@ const Marketplace = () => {
 
   // Helper function to determine if pet is a parrot
   const isParrot = (pet: any): boolean => {
-    const name = pet.name?.toLowerCase() || ''
+    const name = getDisplayName(pet).toLowerCase()
     const breed = pet.breed?.toLowerCase() || ''
-    const description = pet.description?.toLowerCase() || ''
+    const description = getDisplayDescription(pet).toLowerCase()
     const combined = `${name} ${breed} ${description}`
     return combined.includes('parrot') || combined.includes('macaw') || 
            combined.includes('cockatoo') || combined.includes('budgie')
@@ -298,18 +327,19 @@ const Marketplace = () => {
 
   // Helper function to determine if pet is a rabbit
   const isRabbit = (pet: any): boolean => {
-    const name = pet.name?.toLowerCase() || ''
+    const name = getDisplayName(pet).toLowerCase()
     const breed = pet.breed?.toLowerCase() || ''
-    const description = pet.description?.toLowerCase() || ''
+    const description = getDisplayDescription(pet).toLowerCase()
     const combined = `${name} ${breed} ${description}`
     return combined.includes('rabbit') || combined.includes('bunny') || 
            combined.includes('lop')
   }
 
   // Helper function to extract numeric price from string (e.g., "$500" or "Rs. 500")
-  const extractPrice = (priceStr: string): number => {
-    if (!priceStr) return 0
-    const numericValue = priceStr.replace(/[^0-9]/g, '')
+  const extractPrice = (priceValue: unknown): number => {
+    if (typeof priceValue === 'number') return Number.isFinite(priceValue) ? priceValue : 0
+    if (typeof priceValue !== 'string' || !priceValue) return 0
+    const numericValue = priceValue.replace(/[^0-9]/g, '')
     return parseInt(numericValue) || 0
   }
 
@@ -318,9 +348,9 @@ const Marketplace = () => {
     return listings.filter(pet => {
       // Apply search query filter (search in name, breed, and description)
       if (searchQuery) {
-        const matchesName = matchesSearch(pet.name || '', searchQuery)
+        const matchesName = matchesSearch(getDisplayName(pet), searchQuery)
         const matchesBreed = matchesSearch(pet.breed || '', searchQuery)
-        const matchesDescription = matchesSearch(pet.description || '', searchQuery)
+        const matchesDescription = matchesSearch(getDisplayDescription(pet), searchQuery)
         
         if (!matchesName && !matchesBreed && !matchesDescription) {
           return false
@@ -339,13 +369,39 @@ const Marketplace = () => {
       } else if (activeFilter === "rabbit") {
         return isRabbit(pet)
       } else if (activeFilter === "under500") {
-        const price = extractPrice(pet.price || '')
-        return price < 500
+        const price = extractPrice(pet.price)
+        return price > 0 && price < 500
       }
 
       return true
     })
   }, [listings, activeFilter, searchQuery])
+
+  const sortedListings = useMemo(() => {
+    const items = [...filteredListings]
+
+    items.sort((a, b) => {
+      const priceA = extractPrice(a.price)
+      const priceB = extractPrice(b.price)
+      const ageA = Number.isFinite(Number(a.age)) ? Number(a.age) : Number.MAX_SAFE_INTEGER
+      const ageB = Number.isFinite(Number(b.age)) ? Number(b.age) : Number.MAX_SAFE_INTEGER
+      const timeA = a?.created_at ? new Date(a.created_at).getTime() : 0
+      const timeB = b?.created_at ? new Date(b.created_at).getTime() : 0
+      const nameA = getDisplayName(a).toLowerCase()
+      const nameB = getDisplayName(b).toLowerCase()
+
+      if (sortBy === "price-low") return priceA - priceB
+      if (sortBy === "price-high") return priceB - priceA
+      if (sortBy === "age-young") return ageA - ageB
+      if (sortBy === "name-az") return nameA.localeCompare(nameB)
+      if (sortBy === "name-za") return nameB.localeCompare(nameA)
+
+      // default newest first
+      return timeB - timeA
+    })
+
+    return items
+  }, [filteredListings, sortBy])
 
   return (
     <section className="py-20 bg-muted/30" id="marketplace">
@@ -399,6 +455,23 @@ const Marketplace = () => {
           </div>
         </div>
 
+        {/* Sort Bar */}
+        <div className="max-w-sm mx-auto mb-8">
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sort listings" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="price-low">Price: Low to High</SelectItem>
+              <SelectItem value="price-high">Price: High to Low</SelectItem>
+              <SelectItem value="age-young">Age: Youngest First</SelectItem>
+              <SelectItem value="name-az">Name: A to Z</SelectItem>
+              <SelectItem value="name-za">Name: Z to A</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Filter Bar */}
         <div className="flex flex-wrap gap-4 justify-center mb-12">
           <Button 
@@ -449,9 +522,9 @@ const Marketplace = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {loading ? (
             <p className="text-center w-full">Loading listings...</p>
-          ) : filteredListings.length === 0 ? (
+          ) : sortedListings.length === 0 ? (
             <p className="text-center w-full">No listings found matching your filters.</p>
-          ) : filteredListings.map((pet) => (
+          ) : sortedListings.map((pet) => (
             <Card 
               key={pet.id} 
               className="group overflow-hidden hover:shadow-medium transition-all duration-300 border-border/50 bg-card cursor-pointer"
@@ -459,11 +532,17 @@ const Marketplace = () => {
             >
               {/* Image */}
               <div className="relative aspect-square overflow-hidden">
-                <img 
-                  src={getFirstImage(pet) || cat1}
-                  alt={pet.pet_name || pet.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                {getFirstImage(pet) ? (
+                  <img 
+                    src={getFirstImage(pet) || ""}
+                    alt={getDisplayName(pet)}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm">
+                    No Image Available
+                  </div>
+                )}
                 <div className="absolute top-4 left-4 flex gap-2">
                   {pet.verified && (
                     <Badge className="bg-accent text-accent-foreground">
@@ -485,16 +564,16 @@ const Marketplace = () => {
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-xl font-semibold text-foreground">{pet.name}</h3>
+                    <h3 className="text-xl font-semibold text-foreground">{getDisplayName(pet)}</h3>
                     <p className="text-muted-foreground">{pet.breed}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{pet.price}</p>
-                    <p className="text-sm text-muted-foreground">{pet.age}</p>
+                    <p className="text-2xl font-bold text-primary">{getDisplayPrice(pet)}</p>
+                    <p className="text-sm text-muted-foreground">{getDisplayAge(pet)}</p>
                   </div>
                 </div>
 
-                <p className="text-muted-foreground text-sm mb-4">{pet.description}</p>
+                <p className="text-muted-foreground text-sm mb-4">{getDisplayDescription(pet)}</p>
 
                 {/* Features */}
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -637,7 +716,7 @@ const Marketplace = () => {
                     className="mt-2"
                     onClick={() => {
                       setSellDialogOpen(false);
-                      navigate("/my-pets/add");
+                      navigate("/add-pet");
                     }}
                   >
                     Add Pet

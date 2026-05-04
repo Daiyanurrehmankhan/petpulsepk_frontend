@@ -38,6 +38,7 @@ const AddPetPage = () => {
   const { isAuthenticated } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [addToMarketplace, setAddToMarketplace] = useState(false);
 
   const form = useForm<AddPetFormValues>({
     resolver: zodResolver(addPetSchema),
@@ -79,8 +80,14 @@ const AddPetPage = () => {
       // send age in years as integer (backend expects integer)
       fd.append('age', String(parseInt(data.ageYears || '0')));
       fd.append('gender', data.gender);
-      // map description to medical_history column
+      // send price (required by backend)
+      fd.append('price', data.price);
+      // send description (required by backend)
+      fd.append('description', data.description);
+      // also map description to medical_history for legacy support
       fd.append('medical_history', data.description || '');
+      // send location
+      fd.append('location', data.location || '');
 
       // append image file if present
       const fileList = (data as any).image as FileList | undefined;
@@ -112,36 +119,38 @@ const AddPetPage = () => {
         description: data.description || pet.description || '',
       };
 
-      try {
-        const listingRes = await axiosClient.post('/marketplace/listings', listingPayload);
-        if (!listingRes.data?.success) {
-          // Listing creation failed, but pet exists. Notify user.
+      if (addToMarketplace) {
+        try {
+          const listingRes = await axiosClient.post('/marketplace/listings', listingPayload);
+          if (!listingRes.data?.success) {
+            // Listing creation failed, but pet exists. Notify user.
+            toast({
+              title: 'Pet created',
+              description: 'Pet added but failed to publish listing. You can publish it later from your dashboard.',
+              variant: 'destructive',
+            });
+            return;
+          }
+        } catch (err) {
+          console.warn('Failed to create marketplace listing', err);
           toast({
             title: 'Pet created',
-            description: 'Pet added but failed to publish listing. You can publish it from your dashboard.',
+            description: 'Pet added but failed to publish listing. You can publish it later from your dashboard.',
             variant: 'destructive',
           });
           return;
         }
-      } catch (err) {
-        console.warn('Failed to create marketplace listing', err);
-        toast({
-          title: 'Pet created',
-          description: 'Pet added but failed to publish listing. You can publish it from your dashboard.',
-          variant: 'destructive',
-        });
-        return;
       }
 
       toast({
         title: 'Pet Added Successfully!',
-        description: res.data.message || 'Your pet listing has been created.',
+        description: addToMarketplace ? 'Your pet and listing have been created.' : 'Your pet has been added to your portal.',
       });
-      setTimeout(() => navigate('/marketplace'), 1200);
+      setTimeout(() => navigate(addToMarketplace ? '/marketplace' : '/my-pets'), 1200);
     } catch (err: any) {
       toast({
         title: 'Failed to add pet',
-        description: err.response?.data?.message || err.message || 'An error occurred',
+        description: err.message || 'An error occurred',
         variant: 'destructive',
       });
     }
@@ -438,9 +447,26 @@ const AddPetPage = () => {
                   )}
                 />
 
+                {/* Add to Marketplace Toggle */}
+                <div className="rounded-lg border border-dashed border-border/50 p-4 bg-muted/20">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="addToMarketplace"
+                      checked={addToMarketplace}
+                      onChange={(e) => setAddToMarketplace(e.target.checked)}
+                      className="h-4 w-4 rounded border-input cursor-pointer"
+                    />
+                    <label htmlFor="addToMarketplace" className="cursor-pointer flex-1">
+                      <p className="font-medium text-sm">Add to Marketplace</p>
+                      <p className="text-xs text-muted-foreground">Automatically list this pet on the marketplace (you can also sell it later from My Pets)</p>
+                    </label>
+                  </div>
+                </div>
+
                 <div className="flex gap-4">
                   <Button type="submit" className="flex-1">
-                    Add Pet Listing
+                    {addToMarketplace ? 'Add Pet & List' : 'Add to My Pets'}
                   </Button>
                   <Button 
                     type="button" 

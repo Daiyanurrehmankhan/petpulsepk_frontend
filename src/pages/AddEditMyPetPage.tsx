@@ -89,7 +89,7 @@ const AddEditMyPetPage = () => {
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err.response?.data?.message || "Failed to load pet",
+        description: error.message || "Failed to load pet",
         variant: "destructive"
       });
       navigate("/my-pets");
@@ -175,7 +175,7 @@ const AddEditMyPetPage = () => {
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err.response?.data?.message || err.message,
+        description: err.message || "Failed to save pet",
         variant: "destructive"
       });
     } finally {
