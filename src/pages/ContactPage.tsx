@@ -24,7 +24,7 @@ const ContactPage = () => {
     {
       icon: Mail,
       title: "Email",
-      content: "support@petpulse.pk",
+      content: "support@pawcare.ai",
       description: "Send us an email anytime"
     },
     {

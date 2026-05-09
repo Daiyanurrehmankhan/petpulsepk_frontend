@@ -85,7 +85,7 @@ const SignupPage = () => {
         
         toast({
           title: "Registration Successful",
-          description: responseData.message || "Welcome to PetPulse.pk!",
+          description: responseData.message || "Welcome to PawCare AI!",
           variant: "default",
         });
 
@@ -112,7 +112,7 @@ const SignupPage = () => {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
-              Join PetPulse.pk and start caring for your pets
+              Join PawCare AI and start caring for your pets
             </CardDescription>
           </CardHeader>
           <CardContent>

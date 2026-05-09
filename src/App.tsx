@@ -11,7 +11,6 @@ import NotFound from "./pages/NotFound";
 import MarketplacePage from "./pages/MarketplacePage";
 import AIHealthCheckPage from "./pages/AIHealthCheckPage";
 import FindVetsPage from "./pages/FindVetsPage";
-import HealthTrackerPage from "./pages/HealthTrackerPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/LoginPage";
@@ -27,6 +26,7 @@ import MyPetsPage from "./pages/MyPetsPage";
 import AddEditMyPetPage from "./pages/AddEditMyPetPage";
 import MyPetGalleryPage from "./pages/MyPetGalleryPage";
 import VetAppointmentsPage from "./pages/VetAppointmentsPage";
+import VetViewAllAppointmentsPage from "./pages/VetViewAllAppointmentsPage";
 import BookAppointmentPage from "./pages/BookAppointmentPage";
 import PetsLostAndFoundPage from "./pages/PetsLostAndFoundPage";
 
@@ -60,14 +60,7 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/health-tracker"
-              element={
-                <PrivateRoute>
-                  <HealthTrackerPage />
-                </PrivateRoute>
-              }
-            />
+            {/* Health Tracker page removed */}
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/lost-and-found" element={<PetsLostAndFoundPage />} />
@@ -166,6 +159,14 @@ const App = () => (
               element={
                 <PrivateRoute allowedRoles={['vet']}>
                   <VetAppointmentsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/vet/view-all-appointments"
+              element={
+                <PrivateRoute allowedRoles={['vet']}>
+                  <VetViewAllAppointmentsPage />
                 </PrivateRoute>
               }
             />

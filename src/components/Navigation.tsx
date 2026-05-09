@@ -20,7 +20,6 @@ const Navigation = () => {
     { name: "Marketplace", icon: ShoppingBag, href: "/marketplace" },
     { name: "AI Health Check", icon: Brain, href: "/ai-health-check" },
     { name: "Find Vets", icon: Stethoscope, href: "/find-vets" },
-    { name: "Health Tracker", icon: Heart, href: "/health-tracker" },
     { name: "Lost & Found", icon: Search, href: "/lost-and-found" },
     { name: "About", icon: Info, href: "/about" },
     { name: "Contact", icon: Mail, href: "/contact" },
@@ -28,9 +27,7 @@ const Navigation = () => {
 
   const visibleNavigationItems =
     user?.role === "vet"
-      ? navigationItems.filter(
-          (item) => item.name !== "Find Vets" && item.name !== "Health Tracker"
-        )
+      ? navigationItems.filter((item) => item.name !== "Find Vets")
       : navigationItems;
 
   return (
@@ -43,7 +40,7 @@ const Navigation = () => {
               <Heart className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              PetPulse.pk
+              PawCare AI
             </span>
           </Link>
 

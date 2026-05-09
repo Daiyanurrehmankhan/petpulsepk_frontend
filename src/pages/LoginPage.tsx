@@ -43,7 +43,7 @@ const LoginPage = () => {
 
         toast({
           title: "Login Successful",
-          description: responseData.message || "Welcome back to PetPulse.pk!",
+          description: responseData.message || "Welcome back to PawCare AI!",
           variant: "default",
         });
 
@@ -70,7 +70,7 @@ const LoginPage = () => {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
             <CardDescription className="text-center">
-              Sign in to your PetPulse.pk account
+              Sign in to your PawCare AI account
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -350,7 +350,7 @@ const VetDashboard = () => {
                   <Award className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  PetPulse Platform
+                  PawCare AI Platform
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Connect with thousands of pet owners and grow your practice.

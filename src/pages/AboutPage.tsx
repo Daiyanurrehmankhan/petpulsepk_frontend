@@ -43,13 +43,13 @@ const AboutPage = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4 mr-2" />
-              About PetPulse.pk
+              About PawCare AI
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Pakistan's Leading <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Pet Care Platform</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              PetPulse.pk is revolutionizing pet healthcare in Pakistan by connecting pet owners with verified veterinarians, 
+              PawCare AI is revolutionizing pet healthcare in Pakistan by connecting pet owners with verified veterinarians, 
               providing AI-powered health diagnostics, and offering a comprehensive marketplace for all pet needs.
             </p>
           </div>
@@ -99,7 +99,7 @@ const AboutPage = () => {
               <h2 className="text-3xl font-bold mb-6 text-center">Our Story</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Founded in 2024, PetPulse.pk was born from a simple observation: pet owners in Pakistan 
+                  Founded in 2024, PawCare AI was born from a simple observation: pet owners in Pakistan 
                   needed better access to reliable veterinary care and pet supplies. What started as a small 
                   initiative has grown into Pakistan's most comprehensive pet care platform.
                 </p>

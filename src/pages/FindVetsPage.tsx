@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search, MapPin, Star, Clock, MessageCircle, Calendar,
-  Shield, Award, Loader2, User,
+  Shield, Award, Loader2, User, Mail, PhoneCall, Copy, X,
 } from "lucide-react";
 import axiosClient from "@/lib/api/axios-client";
 
@@ -25,6 +25,10 @@ const FindVetsPage = () => {
   const navigate = useNavigate();
   const [vets, setVets] = useState<Vet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
+  const [contactVet, setContactVet] = useState<Vet | null>(null);
+  const [copied, setCopied] = useState<"email" | "phone" | null>(null);
 
   useEffect(() => {
     axiosClient
@@ -37,6 +41,20 @@ const FindVetsPage = () => {
       .catch(() => setVets([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const filteredVets = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const loc = locationQuery.trim().toLowerCase();
+    return vets.filter((vet) => {
+      const inQuery = q === "" || [vet.full_name, vet.vet_specialization, vet.email]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+      const inLoc = loc === "" || (vet.city || "").toLowerCase().includes(loc);
+      return inQuery && inLoc;
+    });
+  }, [vets, query, locationQuery]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,6 +85,9 @@ const FindVetsPage = () => {
                   <Input
                     placeholder="Search by name, specialty..."
                     className="pl-10"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
                   />
                 </div>
               </div>
@@ -75,6 +96,8 @@ const FindVetsPage = () => {
                 <Input
                   placeholder="Location"
                   className="pl-10"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
                 />
               </div>
               <Button variant="hero" className="w-full">
@@ -104,7 +127,8 @@ const FindVetsPage = () => {
             </div>
           ) : (
             <div className="grid gap-6 mb-12">
-              {vets.map((vet) => (
+              {/** display filtered vets based on query & location */}
+              {filteredVets.map((vet) => (
                 <Card key={vet.id} className="overflow-hidden hover:shadow-medium transition-all duration-300">
                   <div className="grid md:grid-cols-4 gap-6 p-6">
                     {/* Vet Avatar */}
@@ -160,7 +184,7 @@ const FindVetsPage = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="md:col-span-1 flex flex-col gap-3">
+                      <div className="md:col-span-1 flex flex-col gap-3">
                       <Button
                         variant="hero"
                         className="w-full"
@@ -169,7 +193,7 @@ const FindVetsPage = () => {
                         <Calendar className="w-4 h-4 mr-2" />
                         Book Appointment
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full" onClick={() => setContactVet(vet)}>
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Send Message
                       </Button>
@@ -177,6 +201,99 @@ const FindVetsPage = () => {
                   </div>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {/* Contact popup (mailto/tel) */}
+          {contactVet && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setContactVet(null)} />
+              <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md p-5 mx-auto">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="w-6 h-6 text-primary/60" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold">Contact {contactVet.full_name}</h4>
+                      <p className="text-sm text-muted-foreground">Open your phone or email app to contact directly.</p>
+                    </div>
+                  </div>
+                  <button
+                    aria-label="Close"
+                    className="p-1 rounded-md text-muted-foreground hover:bg-muted/10"
+                    onClick={() => setContactVet(null)}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="mt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Email</div>
+                      <div className="font-medium text-sm break-words">{contactVet.email || "Not provided"}</div>
+                      {copied === "email" && <div className="text-xs text-success mt-1">Copied email to clipboard</div>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {contactVet.email ? (
+                        <a href={`mailto:${contactVet.email}`} className="-ml-1">
+                          <button className="inline-flex items-center gap-2 px-3 py-2 bg-sky-400 hover:bg-sky-500 text-white rounded-md">
+                            <Mail className="w-4 h-4" />
+                            Email
+                          </button>
+                        </a>
+                      ) : null}
+                      {contactVet.email ? (
+                        <button
+                          className="px-3 py-2 border rounded-md text-sm text-muted-foreground"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(contactVet.email || "");
+                              setCopied("email");
+                              setTimeout(() => setCopied(null), 1800);
+                            } catch {}
+                          }}
+                        >
+                          <div className="flex items-center gap-2"><Copy className="w-4 h-4" /> Copy</div>
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Phone</div>
+                      <div className="font-medium text-sm">{contactVet.phone || "Not provided"}</div>
+                      {copied === "phone" && <div className="text-xs text-success mt-1">Copied phone to clipboard</div>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {contactVet.phone ? (
+                        <a href={`tel:${contactVet.phone}`} className="-ml-1">
+                          <button className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md">
+                            <PhoneCall className="w-4 h-4" />
+                            Call
+                          </button>
+                        </a>
+                      ) : null}
+                      {contactVet.phone ? (
+                        <button
+                          className="px-3 py-2 border rounded-md text-sm text-muted-foreground"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(contactVet.phone || "");
+                              setCopied("phone");
+                              setTimeout(() => setCopied(null), 1800);
+                            } catch {}
+                          }}
+                        >
+                          <div className="flex items-center gap-2"><Copy className="w-4 h-4" /> Copy</div>
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

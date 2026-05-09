@@ -69,6 +69,8 @@ const PetDetailsPage = () => {
     );
   }
 
+  const displayName = pet.name || pet.pet_name || pet.title || 'Pet';
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Navigation />
@@ -93,7 +95,7 @@ const PetDetailsPage = () => {
               <div className="aspect-square relative">
                 <img
                   src={typeof selectedImage === 'string' ? selectedImage : selectedImage || cat1}
-                  alt={pet.name}
+                  alt={displayName}
                   className="w-full h-full object-cover"
                 />
                 {pet.verified && (
@@ -119,7 +121,7 @@ const PetDetailsPage = () => {
                     <div className="aspect-square">
                       <img
                         src={typeof img === 'string' ? img : img || cat1}
-                        alt={`${pet.pet_name || pet.name} ${idx + 1}`}
+                        alt={`${displayName} ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -135,7 +137,7 @@ const PetDetailsPage = () => {
             <div>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-4xl font-bold text-foreground mb-2">{pet.name}</h1>
+                  <h1 className="text-4xl font-bold text-foreground mb-2">{displayName}</h1>
                   <p className="text-xl text-muted-foreground">{pet.breed}</p>
                 </div>
                 <div className="text-right">
