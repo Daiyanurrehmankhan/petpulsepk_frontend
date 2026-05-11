@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('owner' | 'vet')[];
+  allowedRoles?: ('owner' | 'vet' | 'admin')[];
 }
 
 export function PrivateRoute({ children, allowedRoles }: PrivateRouteProps) {
@@ -30,7 +30,7 @@ export function PrivateRoute({ children, allowedRoles }: PrivateRouteProps) {
   // Check role-based access
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on user's actual role
-    const redirectTo = user.role === 'vet' ? '/vet-dashboard' : '/pet-portal';
+    const redirectTo = user.role === 'vet' ? '/vet-dashboard' : user.role === 'admin' ? '/admin/dashboard' : '/pet-portal';
     return <Navigate to={redirectTo} replace />;
   }
 

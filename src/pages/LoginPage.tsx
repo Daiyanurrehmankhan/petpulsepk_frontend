@@ -47,8 +47,12 @@ const LoginPage = () => {
           variant: "default",
         });
 
-        // Redirect to home page
-        navigate('/');
+        // Redirect based on user role
+        if (user.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/');
+        }
       } else {
         throw new Error(responseData.message || "Login failed");
       }

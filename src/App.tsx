@@ -19,6 +19,7 @@ import SignupPage from "./pages/SignupPage";
 import AddPetPage from "./pages/AddPetPage";
 import PetPortalPage from "./pages/PetPortalPage";
 import VetDashboardPage from "./pages/VetDashboardPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import PetDetailsPage from "./pages/PetDetailsPage";
 import VaccinationsPage from "./pages/VaccinationsPage";
 import ContactSellerPage from "./pages/ContactSellerPage";
@@ -175,6 +176,14 @@ const App = () => (
               element={
                 <PrivateRoute allowedRoles={['owner']}>
                   <BookAppointmentPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <AdminDashboardPage />
                 </PrivateRoute>
               }
             />
